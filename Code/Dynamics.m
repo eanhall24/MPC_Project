@@ -42,31 +42,31 @@ A = [0 0 0 1 0 0 0 0 0 0 0 0
 %       0 0 1/J(2) 0
 %       0 0 0 1/J(3)];
 
- B = [0 0 0 0
-      0 0 0 0
-      0 0 0 0
-      0 0 0 0
-      0 0 0 0
-      1/mass 1/mass 1/mass 1/mass
-      0 0 0 0
-      0 0 0 0
-      0 0 0 0
-      l/J(1) -l/J(1) -l/J(1) l/J(1)
-      -l/J(2) -l/J(2) l/J(2) l/J(2)
-      k/J(3) -k/J(3) k/J(3) -k/J(3)];
+ B = [0 0 0 0 0
+      0 0 0 0 0
+      0 0 0 0 0 
+      0 0 0 0 0
+      0 0 0 0 0
+      1/mass 1/mass 1/mass 1/mass -1
+      0 0 0 0 0
+      0 0 0 0 0
+      0 0 0 0 0
+      l/J(1) -l/J(1) -l/J(1) l/J(1) 0
+      -l/J(2) -l/J(2) l/J(2) l/J(2) 0
+      k/J(3) -k/J(3) k/J(3) -k/J(3) 0];
   
 C = eye(12);
 
 D = 0;
 
-E = [0;0;0;0;0;0;0;0;0;0;0;0];
+E = [0;0;0;0;0;-g;0;0;0;0;0;0];
   
 %% System
 system = ss(A,B,C,D);
 % Discretization 
-dsys = c2d(system,0.1,'foh');
-A = dsys.A;
-B = dsys.B;
-C = dsys.C;
-D = dsys.D;
+% dsys = c2d(system,0.1,'foh');
+% A = dsys.A;
+% B = dsys.B;
+% C = dsys.C;
+% D = dsys.D;
   

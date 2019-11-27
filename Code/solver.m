@@ -18,17 +18,19 @@ end
 cost = x(:,N+1)'*P*x(:,N+1);
 
 for k = 1:N
-    state = [state, xL <= x(:,k+1),x(:,k+1)<=xU];
+%     state = [state, xL <= x(:,k+1),x(:,k+1)<= xU,...
+%         [-0.2;-0.2;-0.2] <= x(1:3,k+1)-x(1:3,k),...
+%         x(1:3,k+1)-x(1:3,k) <= [0.2;0.2;0.2]];
     
 %     input = [uL <= u(:,k),u(:,k) <= uU];
     
-    dynamics = x(:,k+1) == A*x(:,k) + B*(u(:,k)+[-9.81;0;0;0]);
+    dynamics = x(:,k+1) == A*x(:,k) + B*u(:,k);
 
     cost = cost + (x(:,k) - x(:,N+1))'*Q*(x(:,k) - x(:,N+1)) + (u(:,k))'*R*(u(:,k));
 end
 
 options = sdpsettings('verbose',0,'solver','quadprog');
-sol = optimize([state, dynamics],cost,options);
+sol = optimize([dynamics],cost,options);
 
 % assign(x,0);
 % check(state)
