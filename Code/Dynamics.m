@@ -51,7 +51,7 @@ A = [0 1 0 0 0 0 0 0 0 0 0 0
       0 0 0 0 0
       l/J(1) -l/J(1) -l/J(1) l/J(1) 0
       0 0 0 0 0
-      1/mass 1/mass 1/mass 1/mass -g
+      1/mass 1/mass 1/mass 1/mass -1
       0 0 0 0 0
       k/J(3) -k/J(3) k/J(3) -k/J(3) 0];
   
