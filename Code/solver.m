@@ -18,7 +18,7 @@ end
 cost = x(:,N+1)'*P*x(:,N+1);
 
 for k = 1:N
-    constr = [constr, xL <= x(:,k+1),x(:,k+1)<= xU];
+    constr = [constr, xL <= x(:,k),x(:,k)<= xU];
     
     constr = [constr, uL <= u(:,k),u(:,k) <= uU];
     
@@ -27,13 +27,11 @@ for k = 1:N
     cost = cost + (x(:,k) - x(:,N+1))'*Q*(x(:,k) - x(:,N+1)) + (u(:,k))'*R*(u(:,k));
 end
 
-options = sdpsettings('verbose',0,'solver','ipopt');
+options = sdpsettings('verbose',0,'solver','quadprog');
 sol = optimize(constr,cost,options);
 
 % assign(x,0);
-% check(state)
-% check(input)
-% check(dynamics)
+% check(constr)
 
 if sol.problem == 0
     feas = true;

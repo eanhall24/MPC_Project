@@ -48,7 +48,7 @@ Dynamics;
 % plot(x(9,:))
 
 %% MPC
-N = 50;
+N = 20;
 M = 200;
 x0 = zeros(12,1);
 n = size(x0,1);
@@ -60,8 +60,8 @@ predErr = zeros(n,M-N+1);
 
 uL = [-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;g];
 uU = [0.5*mass*g;0.5*mass*g;0.5*mass*g;0.5*mass*g;g];
-xL = [-3;-1;-pi/6;-10000;-3;-1;-pi/6;-10000;-3;-1;-pi/6;-10000];
-xU = [3;1;pi/6;10000;3;1;pi/6;10000;3;1;pi/6;10000];
+xL = [-3;-10;-pi/6;-10000;-3;-10;-pi/6;-10000;-3;-10;-pi/6;-10000];
+xU = [3;10;pi/6;10000;3;10;pi/6;10000;3;10;pi/6;10000];
 Q = diag([1 0 0 0 1 0 0 0 1 0 0 0]);
 P = Q;
 R = eye(5);
@@ -69,7 +69,7 @@ R = eye(5);
 xOpt(:,1) = x0;
 xPred = zeros(n,N+1,M);
 
-xN = [-1;0;0;0;-2;0;0;0;2;0;0;0];
+xN = [-3;0;0;0;1;0;0;0;2;0;0;0];
 
 [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
 
@@ -107,7 +107,6 @@ xN = [-1;0;0;0;-2;0;0;0;2;0;0;0];
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 
 % Position
-
 
 % Find the prediction error
 % for i = 1:length(predErr)
