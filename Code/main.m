@@ -47,54 +47,63 @@ Dynamics;
 % figure(2)
 % plot(x(9,:))
 
-%% MPC
+%% MPC Horizon
 N = 20;
-M = 30;
-x0 = zeros(12,1);
-n = size(x0,1);
+n = size(A,2);
 
-feas = false([1,M]);
-xOpt = zeros(n,M+1);
-uOpt = zeros(5,M);
-predErr = zeros(n,M-N+1);
-
+%% State and Input Constraints
 uL = [-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;g];
-uU = [0.5*mass*g;0.5*mass*g;0.5*mass*g;0.5*mass*g;g];
-xL = [-5;-10;-pi/6;-10000;-5;-10;-pi/6;-10000;0;-10;-pi/6;-10000];
-xU = [5;10;pi/6;10000;5;10;pi/6;10000;5;10;pi/6;10000];
+uU = [mass*g;mass*g;mass*g;mass*g;g];
+xL = [-5;-10;-pi/6;-10000;-5;-10;-pi/6;-10000;0;-10;-pi;-10000];
+xU = [5;10;pi/6;10000;5;10;pi/6;10000;5;10;pi;10000];
+
+%% Objective Function
+% stage cost x'Qx+u'Ru
 Q = diag([1 0 0 0 1 0 0 0 1 0 0 0]);
-P = Q;
 R = eye(5);
 
+%% MPC Design
+% The following lines of code implement an MPC where the terminal set is
+% equal to the origin
+P = Q;
+xN = [2;0;0;0;-4;0;0;0;3.8;0;pi;0];
+bf = xN;
+
+%% Simulation Setup
+M = 25;
+x0 = zeros(12,1);
+xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
+uOpt = zeros(5,M);
 xPred = zeros(n,N+1,M);
-
-xN = [2;0;0;0;-4;0;0;0;3.8;0;0;0];
-
+feas = false([1,M]);
+predErr = zeros(n,M-N+1);
 % [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
 
+%% Simulation
 figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,xN,[]);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,[]);
     
     if ~feas(t)
+        warning('MPC problem infeasible--exiting simulation')
         xOpt = [];
         uOpt = [];
-        predErr = [];
         return;
-    end
+    end 
     
     % Save open loop predictions
     xPred(:,:,t) = x;
     
-    % Save closed loop trajectory
-    xOpt(:,t+1) = x(:,2);
+    % Save first optimal input of sequence
     uOpt(:,t) = u(:,1);
+    % Compute next step of closed-loop trajectory
+    xOpt(:,t+1) = x(:,2);
     
     % Plot Open Loop
-    plot3(x(1,:),x(5,:),x(9,:),'r--')
+    plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'r--')
     grid on
     hold on
     pause(0.1)
