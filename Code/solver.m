@@ -7,31 +7,28 @@ u = sdpvar(nu,N);
 
 feas = false;
 
-state = [x(:,1) == x0];
+constr = [x(:,1) == x0];
 
 if isempty(Af)
-    for i = (N-5):(N+1)
-        state = [state, x(:,i)==bf];
-    end
+    constr = [constr, x(:,N+1)==bf];
 else
-    state = [state, Af*x(:,(N-5):(N+1))<=bf];
+    constr = [constr, Af*x(:,(N-5):(N+1))<=bf];
 end
 
 cost = x(:,N+1)'*P*x(:,N+1);
 
 for k = 1:N
-    state = [state, xL <= x(:,k+1),x(:,k+1)<= xU,...
-        -0.3 <= x(9,k+1) - x(9,k), x(9,k+1) - x(9,k) <= 0.3];
+    constr = [constr, xL <= x(:,k+1),x(:,k+1)<= xU];
     
-    input = [uL <= u(:,k),u(:,k) <= uU];
+    constr = [constr, uL <= u(:,k),u(:,k) <= uU];
     
-    dynamics = x(:,k+1) == A*x(:,k) + B*u(:,k);
+    constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k)];
 
     cost = cost + (x(:,k) - x(:,N+1))'*Q*(x(:,k) - x(:,N+1)) + (u(:,k))'*R*(u(:,k));
 end
 
 options = sdpsettings('verbose',0,'solver','ipopt');
-sol = optimize([state dynamics input],cost,options);
+sol = optimize(constr,cost,options);
 
 % assign(x,0);
 % check(state)
