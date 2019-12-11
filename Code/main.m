@@ -52,10 +52,10 @@ N = 20;
 n = size(A,2);
 
 %% State and Input Constraints
-uL = [-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;g];
+uL = [0;0;0;0;g];
 uU = [mass*g;mass*g;mass*g;mass*g;g];
-xL = [-5;-10;-pi/6;-10000;-5;-10;-pi/6;-10000;0;-10;-pi;-10000];
-xU = [5;10;pi/6;10000;5;10;pi/6;10000;5;10;pi;10000];
+xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
+xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
@@ -66,7 +66,7 @@ R = eye(5);
 % The following lines of code implement an MPC where the terminal set is
 % equal to the origin
 P = Q;
-xN = [2;0;0;0;-4;0;0;0;3.8;0;pi;0];
+xN = [2;0;0;0;-4;0;0;0;3.8;0;0;0];
 bf = xN;
 
 %% Simulation Setup
