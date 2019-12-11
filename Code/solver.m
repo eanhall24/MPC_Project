@@ -10,7 +10,7 @@ feas = false;
 constr = [x(:,1) == x0];
 
 if isempty(Af)
-    constr = [constr, x(:,N+1)==bf];
+    constr = [constr, x(:,N-1)==bf, x(:,N)==bf, x(:,N+1)==bf];
 else
     constr = [constr, Af*x(:,(N-5):(N+1))<=bf];
 end

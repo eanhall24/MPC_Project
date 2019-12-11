@@ -48,7 +48,7 @@ Dynamics;
 % plot(x(9,:))
 
 %% MPC Horizon
-N = 20;
+N = 40;
 n = size(A,2);
 
 %% State and Input Constraints
@@ -70,7 +70,7 @@ xN = [2;0;0;0;-4;0;0;0;3.8;0;0;0];
 bf = xN;
 
 %% Simulation Setup
-M = 25;
+M = 50;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -183,3 +183,10 @@ legend('Motor 1','Motor 2','Motor 3','Motor 4')
 %     err = xOpt(:,i:i+N)-xPred(:,:,i);
 %     predErr(:,i) = [norm(err(1,:)) norm(err(2,:))]';
 % end
+
+xTest = zeros(n,M+1);
+xTest(:,1) = x0;
+
+for i = 1:M
+   xTest(:,i+1) = A*xTest(:,i) + B*uOpt(:,i); 
+end
