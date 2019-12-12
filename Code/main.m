@@ -48,7 +48,7 @@ Dynamics;
 % plot(x(9,:))
 
 %% MPC Horizon
-N = 20;
+N = 16;
 n = size(A,2);
 
 %% State and Input Constraints
@@ -64,13 +64,13 @@ R = eye(5);
 
 %% MPC Design
 % The following lines of code implement an MPC where the terminal set is
-% equal to the origin
+% equal to xN
 P = Q;
 xN = [2;0;0;0;0;0;0;0;2;0;0;0];
 bf = xN;
 
 %% Simulation Setup
-M = 25;
+M = 20;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -103,7 +103,7 @@ for t = 1:M
     xOpt(:,t+1) = x(:,2);
     
     % Plot Open Loop
-    plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'r--')
+    plot3(x(1,:),x(5,:),x(9,:),'r--')
     grid on
     hold on
     pause(0.1)
