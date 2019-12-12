@@ -48,7 +48,7 @@ Dynamics;
 % plot(x(9,:))
 
 %% MPC Horizon
-N = 16;
+N = 25;
 n = size(A,2);
 
 %% State and Input Constraints
@@ -59,18 +59,18 @@ xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = diag([1 0 0 0 1 0 0 0 1 0 0 0]);
+Q = diag([1 1 1 1 1 1 1 1 1 1 1 1]);
 R = eye(5);
 
 %% MPC Design
 % The following lines of code implement an MPC where the terminal set is
 % equal to xN
 P = Q;
-xN = [2;0;0;0;0;0;0;0;2;0;0;0];
+xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
 bf = xN;
 
 %% Simulation Setup
-M = 20;
+M = 30;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -104,6 +104,9 @@ for t = 1:M
     
     % Plot Open Loop
     plot3(x(1,:),x(5,:),x(9,:),'r--')
+    xlim([-5 5])
+    ylim([-5 5])
+    zlim([0 5])
     grid on
     hold on
     pause(0.1)
