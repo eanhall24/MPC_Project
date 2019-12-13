@@ -69,4 +69,7 @@ A = dsys.A;
 B = dsys.B;
 C = dsys.C;
 D = dsys.D;
+
+uRef = mass*g/4*ones(4,1); % For other kind of final states run optimization from slides
+
   

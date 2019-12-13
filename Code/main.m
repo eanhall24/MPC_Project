@@ -48,8 +48,9 @@ Dynamics;
 % plot(x(9,:))
 
 %% MPC Horizon
-N = 16;
+N = 2;
 n = size(A,2);
+nu = 4;
 
 %% State and Input Constraints
 uL = [0;0;0;0;g];
@@ -57,20 +58,43 @@ uU = [mass*g;mass*g;mass*g;mass*g;g];
 xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
 xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
+X = Polyhedron('lb',xL,'ub',xU);
+U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
+
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = diag([1 0 0 0 1 0 0 0 1 0 0 0]);
-R = eye(5);
+Q = 10*diag([1 1 0 0 1 1 0 0 1 1 0 0]);
+Q = Q + diag(ones(12,1));
+R = eye(nu);
 
 %% MPC Design
-% The following lines of code implement an MPC where the terminal set is
-% equal to xN
-P = Q;
-xN = [2;0;0;0;0;0;0;0;2;0;0;0];
-bf = xN;
+% % The following lines of code implement an MPC where the terminal set is
+% % equal to xN
+% P = Q;
+% xN = [2;0;0;0;0;0;0;0;2;0;0;0];
+% bf = xN;
+% Af = [];
+
+%%
+
+% The following for bigger Xf (coming from LQR Oinf)
+% Closed loop system of 2c
+[K,P]=dlqr(A,B(:,1:nu),Q,R);
+% closed loop system
+Acl=A-B(:,1:nu)*K;
+% remeber to convet input constraits in state constraints
+Xtilde=X.intersect(Polyhedron('H',[-U.H(:,1:nu)*K U.H(:,nu+1)])); 
+Oinf=N_pos_inv(Acl,Xtilde);
+% figure(50);
+% plot(Oinf); title('Xf');
+
+Af = Oinf.H(:,1:n);
+bf = Oinf.H(:,n+1);
+
+Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 
 %% Simulation Setup
-M = 20;
+M = 40;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -85,7 +109,7 @@ figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,[]);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef);
     
     if ~feas(t)
         warning('MPC problem infeasible--exiting simulation')
@@ -117,6 +141,7 @@ plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 xlabel('X')
 ylabel('Y')
 zlabel('Z')
+axis equal;
 
 % Position
 figure('Name','Position')
