@@ -14,29 +14,55 @@ N = 25;
 n = size(A,2);
 
 %% State and Input Constraints
-uL = [0;0;0;0;g];
-uU = [mass*g;mass*g;mass*g;mass*g;g];
-xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
-xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
+% uL = [0;0;0;0;g];
+uL = [0;0;0;0];
+% uU = [mass*g;mass*g;mass*g;mass*g;g];
+mult = 10;
+uU = mult*[mass*g;mass*g;mass*g;mass*g];
+rot_rate_lim = 10000;
+% xL = [-5;-20;-pi/6;-rot_rate_lim;-5;-20;-pi/6;-rot_rate_lim;0;-20;-pi;-rot_rate_lim];
+% xU = [5;20;pi/6;rot_rate_lim;5;20;pi/6;rot_rate_lim;5;20;pi;rot_rate_lim];
+xL = [-5;-20;-pi/6;-rot_rate_lim;-5;-20;-pi/6;-rot_rate_lim;0;-20;-pi;-rot_rate_lim;1];
+xU = [5;20;pi/6;rot_rate_lim;5;20;pi/6;rot_rate_lim;5;20;pi;rot_rate_lim;1];
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = diag([1 1 1 1 1 1 1 1 1 1 1 1]);
-R = eye(5);
+Q = diag([1 1 10 10 1 1 10 10 1 1 10 10 0]);
+% R = eye(5);
+R = eye(4);
 
 %% MPC Design
 % The following lines of code implement an MPC where the terminal set is
 % equal to xN
 P = Q;
-xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
+% xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
+% xN = [-3;0;0;0;4;0;0;0;2;0;0;0;1];
+xN = [0;0;0;0;0;0;0;0;2;0;0;0;1];
 bf = xN;
 
 %% Simulation Setup
 M = 30;
-x0 = zeros(12,1);
+% x0 = zeros(12,1);
+x0 = zeros(13,1);
+x0(end) = 1;
+% x0 = [0;
+%       0;
+%       0;
+%       0;
+%       0;
+%       0;
+%       0;
+%       0;
+%       1;
+%       0;
+%       0;
+%       0;
+%       1];
+
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
-uOpt = zeros(5,M);
+% uOpt = zeros(5,M);
+uOpt = zeros(4,M);
 xPred = zeros(n,N+1,M);
 feas = false([1,M]);
 predErr = zeros(n,M-N+1);
@@ -142,6 +168,43 @@ title('Motor Forces')
 xlabel('timestep(k)')
 ylabel('Force(N)')
 legend('Motor 1','Motor 2','Motor 3','Motor 4')
+
+%%
+
+mass = 32e-03;
+g = 9.81;
+
+u_const = 10*.25*mass*g*ones(4,1);
+
+n_steps = 10;
+x0 = [0;
+      0;
+      0;
+      0;
+      0;
+      0;
+      0;
+      0;
+      1;
+      0;
+      0;
+      0;
+      1];
+x_test = zeros(13,n_steps+1);
+x_test(:,1) = x0;
+
+for j = 1:(n_steps)
+    
+    x_test(:,j+1) = A*x_test(:,j) + B*u_const;
+    
+end
+
+figure
+plot(x_test(10,:))
+
+figure
+plot(x_test(9,:))
+%%
 
 % Find the prediction error
 % for i = 1:length(predErr)
