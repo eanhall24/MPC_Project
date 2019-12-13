@@ -6,7 +6,7 @@ clc
 %% Dynamics
 % Load Dynamics
 Dynamics;
-wind_disturbance = 1;
+wind_disturbance = 0;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -49,16 +49,17 @@ wind_disturbance = 1;
 % plot(x(9,:))
 
 %% MPC Horizon
-N = 15;
+N = 3;
 % N = 6;
 n = size(A,2);
 nu = 4;
 
 %% State and Input Constraints
-uL = [0;0;0;0;g];
-uU = [mass*g;mass*g;mass*g;mass*g;g];
-xL = [-10;-20;-pi/6;-10000;-10;-20;-pi/6;-10000;0;-20;-pi;-10000];
-xU = [10;20;pi/6;10000;10;20;pi/6;10000;5;20;pi;10000];
+% uL = [0.025*mass*g;0.025*mass*g;0.025*mass*g;0.025*mass*g;g];
+uL = [zeros(4,1);g];
+uU = [14.7;14.7;14.7;14.7;g];
+xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
+xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
 X = Polyhedron('lb',xL,'ub',xU);
 U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
@@ -67,19 +68,20 @@ U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
 % stage cost x'Qx+u'Ru
 Q = 5*diag([3 1 1 1 3 1 1 1 10 3 0 0]);
 Q = Q + diag(ones(12,1));
-R = 0.0001*eye(nu);
+% R = 1*eye(nu);
+R = 0.01*eye(nu);
+% Q = diag(ones(12,1));
+% R = eye(nu);
 
 %% MPC Design
-% % The following lines of code implement an MPC where the terminal set is
+%% The following lines of code implement an MPC where the terminal set is
 % % equal to xN
 % P = Q;
-% xN = [2;0;0;0;0;0;0;0;2;0;0;0];
+% xN = [2;0;0;0;2;0;0;0;2;0;0;0];
 % bf = xN;
 % Af = [];
 
-%%
-
-% The following for bigger Xf (coming from LQR Oinf)
+%% The following for bigger Xf (coming from LQR Oinf)
 % Closed loop system of 2c
 [K,P]=dlqr(A,B(:,1:nu),Q,R);
 % closed loop system
@@ -247,6 +249,7 @@ xlabel('X')
 ylabel('Y')
 zlabel('Z')
 axis equal;
+grid on;
 
 % Position
 figure('Name','Position LQR')

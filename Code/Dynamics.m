@@ -9,10 +9,10 @@ orien = [phi;theta;psi];
 rates = [p;q;r];
 % u = [T;n1;n2;n3];
 u = [cp1;cp2;cp3;cp4];
-mass = 32e-03;
-l = 33e-03;
-k = 0.01;
-J = (10^-6)*[16 16 29];
+mass = 0.688;
+l = 0.12;
+k = 0.014;
+J = (10^-4)*[36 36 74];
 g = 9.81;
 
 %% State Space
