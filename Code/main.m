@@ -14,8 +14,8 @@ N = 25;
 n = size(A,2);
 
 %% State and Input Constraints
-uL = [0;0;0;0;g];
-uU = [mass*g;mass*g;mass*g;mass*g;g];
+uL = [0.025*mass*g;0.025*mass*g;0.025*mass*g;0.025*mass*g;g];
+uU = [14.7;14.7;14.7;14.7;g];
 xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
 xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
