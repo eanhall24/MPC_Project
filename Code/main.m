@@ -12,6 +12,10 @@ Dynamics;
 %% MPC Horizon
 N = 25;
 n = size(A,2);
+nx = size(A,2) ;
+nu = size(B,2) ; 
+xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
+xdes = [-3;0;0;0;4;0;0;0;2;0;0;0]; 
 
 %% State and Input Constraints
 uL = [0;0;0;0;g];
@@ -23,31 +27,53 @@ xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 % stage cost x'Qx+u'Ru
 Q = diag([1 1 1 1 1 1 1 1 1 1 1 1]);
 R = eye(5);
+P = Q;
 
 %% MPC Design
 % The following lines of code implement an MPC where the terminal set is
 % equal to xN
-P = Q;
-xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
-bf = xN;
 
+% Figure out Oinf
+[Finf,P] = dlqr(A,B,Q,R);
+
+model.u.min = uL;
+model.u.max = uU;
+model.x.min = xL ;
+model.x.max = xU ;
+
+X = Polyhedron('lb',model.x.min,'ub',model.x.max);
+U = Polyhedron('lb',model.u.min,'ub',model.u.max);
+
+Acl=A-B*Finf;
+Xtilde = X.intersect(Polyhedron('H',[-U.H(:,1:nu)*Finf U.H(:,nu+1)])); 
+Oinf = max_pos_inv(Acl,Xtilde);
+% Xf = Oinf ; 
+term = Polyhedron('He',[eye(nx) xN]) ; 
+steps = 3;
+Xf = NstepControllableSet(A,B,term,X,U,steps); 
+Xf = Xf(3);
+%%
+Af = Xf.H(:,1:nx);
+bf = Xf.H(:,nx+1);
+% Af = [];
+% bf = xN;
 %% Simulation Setup
 M = 30;
 x0 = zeros(12,1);
-xOpt = zeros(n,M+1);
+xOpt = zeros(nx,M+1);
 xOpt(:,1) = x0;
-uOpt = zeros(5,M);
-xPred = zeros(n,N+1,M);
+uOpt = zeros(nu,M);
+xPred = zeros(nx,N+1,M);
 feas = false([1,M]);
 predErr = zeros(n,M-N+1);
-% [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
+[xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,bf,Af,xdes)
 
 %% Simulation
 figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,[]);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,xdes);
     
     if ~feas(t)
         warning('MPC problem infeasible--exiting simulation')
