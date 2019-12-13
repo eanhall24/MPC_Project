@@ -32,7 +32,7 @@ xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
 bf = xN;
 
 %% Simulation Setup
-M = 30;
+M = 50;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
