@@ -7,70 +7,32 @@ clc
 % Load Dynamics
 Dynamics;
 
-%% Continuous System Test
-% The quadcopter should slow down after each input and hover at the end.
-% u = [0.25*mass*g*ones(4,1);g];
-% u1 = [0.25*1.2*mass*g*ones(4,1);g];
-% u2 = [0.25*0.8*mass*g*ones(4,1);g];
-% u = repmat(u,1,51);
-% u1 = repmat(u1,1,75);
-% u2 = repmat(u2,1,75);
-% u = [u1 u2 u];
-% t = 0:0.1:20;
-% x0 = [2;0;0;0;1;0;0;0;1;0;0;0];
-% [y,t,x] = lsim(system,u,t,x0);
 
-%% Discrete System Test
-% The quadcopter should slow down after each input and hover at the end.
-% u1 = [0.25*1.4*mass*g*ones(4,1);g];
-% u2 = [0.25*0.6*mass*g*ones(4,1);g];
-% u4 = [0.25*mass*g*ones(4,1);g];
-% 
-% N = 25;
-% u1 = repmat(u1,1,10);
-% u2 = repmat(u2,1,10);
-% u4 = repmat(u4,1,5);
-% u = [u1 u2 u4];
-% x0 = zeros(12,1);
-% x = zeros(12,N+1);
-% x(:,1) = x0;
-% 
-% for i = 1:N
-%     x(:,i+1) = A*x(:,i) + B*u(:,i);
-% end
-% 
-% figure(1)
-% plot3(x(1,:),x(5,:),x(9,:))
-% xlim([0 1])
-% ylim([0 1])
-% 
-% figure(2)
-% plot(x(9,:))
 
 %% MPC Horizon
-N = 20;
+N = 25;
 n = size(A,2);
 
 %% State and Input Constraints
-uL = [-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;-0.5*mass*g;g];
+uL = [0;0;0;0;g];
 uU = [mass*g;mass*g;mass*g;mass*g;g];
-xL = [-5;-10;-pi/6;-10000;-5;-10;-pi/6;-10000;0;-10;-pi;-10000];
-xU = [5;10;pi/6;10000;5;10;pi/6;10000;5;10;pi;10000];
+xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
+xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = diag([1 0 0 0 1 0 0 0 1 0 0 0]);
+Q = diag([1 1 1 1 1 1 1 1 1 1 1 1]);
 R = eye(5);
 
 %% MPC Design
 % The following lines of code implement an MPC where the terminal set is
-% equal to the origin
+% equal to xN
 P = Q;
-xN = [2;0;0;0;-4;0;0;0;3.8;0;pi;0];
+xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
 bf = xN;
 
 %% Simulation Setup
-M = 25;
+M = 50;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -103,7 +65,10 @@ for t = 1:M
     xOpt(:,t+1) = x(:,2);
     
     % Plot Open Loop
-    plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'r--')
+    plot3(x(1,:),x(5,:),x(9,:),'r--')
+    xlim([-5 5])
+    ylim([-5 5])
+    zlim([0 5])
     grid on
     hold on
     pause(0.1)
@@ -183,3 +148,50 @@ legend('Motor 1','Motor 2','Motor 3','Motor 4')
 %     err = xOpt(:,i:i+N)-xPred(:,:,i);
 %     predErr(:,i) = [norm(err(1,:)) norm(err(2,:))]';
 % end
+
+% xTest = zeros(n,M+1);
+% xTest(:,1) = x0;
+% 
+% for i = 1:M
+%    xTest(:,i+1) = A*xTest(:,i) + B*uOpt(:,i); 
+% end
+
+%% Continuous System Test
+% The quadcopter should slow down after each input and hover at the end.
+% u = [0.25*mass*g*ones(4,1);g];
+% u1 = [0.25*1.2*mass*g*ones(4,1);g];
+% u2 = [0.25*0.8*mass*g*ones(4,1);g];
+% u = repmat(u,1,51);
+% u1 = repmat(u1,1,75);
+% u2 = repmat(u2,1,75);
+% u = [u1 u2 u];
+% t = 0:0.1:20;
+% x0 = [2;0;0;0;1;0;0;0;1;0;0;0];
+% [y,t,x] = lsim(system,u,t,x0);
+
+%% Discrete System Test
+% The quadcopter should slow down after each input and hover at the end.
+% u1 = [0.25*1.4*mass*g*ones(4,1);g];
+% u2 = [0.25*0.6*mass*g*ones(4,1);g];
+% u4 = [0.25*mass*g*ones(4,1);g];
+% 
+% N = 25;
+% u1 = repmat(u1,1,10);
+% u2 = repmat(u2,1,10);
+% u4 = repmat(u4,1,5);
+% u = [u1 u2 u4];
+% x0 = zeros(12,1);
+% x = zeros(12,N+1);
+% x(:,1) = x0;
+% 
+% for i = 1:N
+%     x(:,i+1) = A*x(:,i) + B*u(:,i);
+% end
+% 
+% figure(1)
+% plot3(x(1,:),x(5,:),x(9,:))
+% xlim([0 1])
+% ylim([0 1])
+% 
+% figure(2)
+% plot(x(9,:))

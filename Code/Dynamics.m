@@ -64,7 +64,7 @@ E = [0;0;0;0;0;-g;0;0;0;0;0;0];
 %% System
 system = ss(A,B,[],[]);
 % Discretization 
-dsys = c2d(system,0.1,'foh');
+dsys = c2d(system,0.1,'zoh');
 A = dsys.A;
 B = dsys.B;
 C = dsys.C;
