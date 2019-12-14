@@ -48,7 +48,7 @@ Dynamics;
 % plot(x(9,:))
 
 %% MPC Horizon
-N = 2;
+N = 8;
 n = size(A,2);
 nu = 4;
 
@@ -82,20 +82,27 @@ R = eye(nu);
 [K,P]=dlqr(A,B(:,1:nu),Q,R);
 % closed loop system
 Acl=A-B(:,1:nu)*K;
-% remeber to convet input constraits in state constraints
+% % remeber to convet input constraits in state constraints
 Xtilde=X.intersect(Polyhedron('H',[-U.H(:,1:nu)*K U.H(:,nu+1)])); 
 Oinf=N_pos_inv(Acl,Xtilde);
-% figure(50);
-% plot(Oinf); title('Xf');
+% % figure(50);
+% % plot(Oinf); title('Xf');
 
 Af = Oinf.H(:,1:n);
 bf = Oinf.H(:,n+1);
 
-Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
+% Af = [];
+% bf = [];
+
+Xd = [3;0;0;0;0;0;0;0;3;0;0;0];
 
 %% Simulation Setup
-M = 40;
-x0 = zeros(12,1);
+M = 100;%40;
+% x0 = zeros(12,1);
+x0 = [2;0;0;0;0;0;0;0;3;0;0;0];
+h = x0(9);
+r = 3;%x0(1);
+traj_follow = 1;
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
 uOpt = zeros(5,M);
@@ -109,7 +116,7 @@ figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,t,h,r,traj_follow);
     
     if ~feas(t)
         warning('MPC problem infeasible--exiting simulation')
