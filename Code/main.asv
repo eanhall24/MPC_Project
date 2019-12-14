@@ -6,8 +6,9 @@ clc
 %% Dynamics
 % Load Dynamics
 Dynamics;
-wind_disturbance = 0;
-model_mismatch = 0;
+wind_disturbance = 1;
+model_mismatch = 1;
+dist_reject = 1;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -109,15 +110,21 @@ feas = false([1,M]);
 predErr = zeros(n,M-N+1);
 % [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
 
+if ~dist_reject
+    xk_1 = [];
+else
+    xk_1 = xOpt(:,1);
+end
+
 %% Simulation
 figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,xk_1);
     
     if ~feas(t)
-        warning('MPC problem infeasible--exiting simulation')
+        fprintf('MPC problem infeasible--exiting simulation')
         xOpt = [];
         uOpt = [];
         return;
@@ -129,11 +136,23 @@ for t = 1:M
     % Save first optimal input of sequence
     uOpt(:,t) = u(:,1);
     % Compute next step of closed-loop trajectory
-    if ~(wind_disturbance || model_mismatch)
+    if ~wind_disturbance && ~model_mismatch
         xOpt(:,t+1) = x(:,2);
     elseif wind_disturbance && ~model_mismatch
         xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    elseif model_mismatch && ~wind_disturbance
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
+    else
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(9,t));
     end
+    
+    if t>=2
+        if ~dist_reject
+            xk_1 = [];
+        else
+            xk_1 = xOpt(:,t-1);
+        end
+    else
     
     % Plot Open Loop
     plot3(x(1,:),x(5,:),x(9,:),'r--')
@@ -233,10 +252,14 @@ xOpt_2(:,1) = x0;
 uOpt_2 = zeros(5,M);
 for k =1:M
     uk = [-K*(xk-Xd);g];
-    if ~wind_disturbance
+    if ~wind_disturbance && ~model_mismatch
         xk1 = A*xk + B*uk;
-    else
+    elseif wind_disturbance && ~model_mismatch
         xk1 = A*xk + B*uk + G*f_wind(xk(9));
+    elseif ~wind_disturbance && model_mismatch
+        xk1 = A_tilda*xk + B_tilda*uk;
+    else
+        xk1 = A_tilda*xk + B_tilda*uk + G*f_wind(xk(9));
     end
     uOpt_2(:,k) = uk;
     xOpt_2(:,k+1) = xk1;

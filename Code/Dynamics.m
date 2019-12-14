@@ -65,7 +65,7 @@ G = zeros(12,1);
 G(6) = 1;
 
 % f_wind = @(z) 0.2*z^2;
-f_wind = @(z) 0.2;
+f_wind = @(z) 0.15;
   
 %% System
 system = ss(A,B,[],[]);

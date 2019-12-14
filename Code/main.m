@@ -7,7 +7,8 @@ clc
 % Load Dynamics
 Dynamics;
 wind_disturbance = 1;
-model_mismatch = 1;
+model_mismatch = 0;
+dist_reject = 1;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -109,12 +110,15 @@ feas = false([1,M]);
 predErr = zeros(n,M-N+1);
 % [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
 
+xk_1 = [];
+uk_1 = [];
+
 %% Simulation
 figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,G,xk_1,uk_1);
     
     if ~feas(t)
         fprintf('MPC problem infeasible--exiting simulation')
@@ -137,6 +141,13 @@ for t = 1:M
         xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
     else
         xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    end
+    
+    if ~dist_reject
+        xk_1 = [];
+    else
+        xk_1 = xOpt(:,t);
+        uk_1 = uOpt(:,t);
     end
     
     % Plot Open Loop

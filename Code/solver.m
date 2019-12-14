@@ -1,4 +1,4 @@
-function [xOpt,uOpt,feas] = solver(A, B, P, Q, R, N, x0, xL, xU, uL, uU, bf, Af, Xd, uRef)
+function [xOpt,uOpt,feas] = solver(A, B, P, Q, R, N, x0, xL, xU, uL, uU, bf, Af, Xd, uRef,G,xk_1,uk_1)
 yalmip('clear')
 nx = size(A,2);
 nu = size(B,2);
@@ -6,6 +6,10 @@ x = sdpvar(nx,N+1);
 u = sdpvar(nu,N);
 
 feas = false;
+
+if ~isempty(xk_1)
+    dist = x0 - A*xk_1-B*uk_1;
+end
 
 constr = [x(:,1) == x0];
 
@@ -24,7 +28,12 @@ for k = 1:N
     
     constr = [constr, uL <= u(:,k),u(:,k) <= uU];
     
-    constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k)];
+    if ~isempty(xk_1)
+        constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k) + dist];
+    else
+        constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k)];
+    end
+    
 
 %     cost = cost + (x(:,k) - x(:,N+1))'*Q*(x(:,k) - x(:,N+1)) + (u(1:4,k))'*R*(u(1:4,k)); % Add last input (u-uref)
     cost = cost + (x(:,k) - Xd)'*Q*(x(:,k) - Xd) + (u(1:4,k)-uRef)'*R*(u(1:4,k)-uRef);
