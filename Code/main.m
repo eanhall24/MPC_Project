@@ -6,7 +6,8 @@ clc
 %% Dynamics
 % Load Dynamics
 Dynamics;
-wind_disturbance = 0;
+wind_disturbance = 1;
+model_mismatch = 1;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -116,7 +117,7 @@ for t = 1:M
     [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef);
     
     if ~feas(t)
-        warning('MPC problem infeasible--exiting simulation')
+        fprintf('MPC problem infeasible--exiting simulation')
         xOpt = [];
         uOpt = [];
         return;
@@ -128,10 +129,14 @@ for t = 1:M
     % Save first optimal input of sequence
     uOpt(:,t) = u(:,1);
     % Compute next step of closed-loop trajectory
-    if ~wind_disturbance
+    if ~wind_disturbance && ~model_mismatch
         xOpt(:,t+1) = x(:,2);
-    else
+    elseif wind_disturbance && ~model_mismatch
         xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    elseif model_mismatch && ~wind_disturbance
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
+    else
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(9,t));
     end
     
     % Plot Open Loop
@@ -232,10 +237,14 @@ xOpt_2(:,1) = x0;
 uOpt_2 = zeros(5,M);
 for k =1:M
     uk = [-K*(xk-Xd);g];
-    if ~wind_disturbance
+    if ~wind_disturbance && ~model_mismatch
         xk1 = A*xk + B*uk;
-    else
+    elseif wind_disturbance && ~model_mismatch
         xk1 = A*xk + B*uk + G*f_wind(xk(9));
+    elseif ~wind_disturbance && model_mismatch
+        xk1 = A_tilda*xk + B_tilda*uk;
+    else
+        xk1 = A_tilda*xk + B_tilda*uk + G*f_wind(xk(9));
     end
     uOpt_2(:,k) = uk;
     xOpt_2(:,k+1) = xk1;
