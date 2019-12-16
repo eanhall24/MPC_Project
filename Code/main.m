@@ -6,6 +6,9 @@ clc
 %% Dynamics
 % Load Dynamics
 Dynamics;
+wind_disturbance = 1;
+model_mismatch = 0;
+dist_reject = 1;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -54,7 +57,8 @@ nu = 4;
 
 %% State and Input Constraints
 uL = [0;0;0;0;g];
-uU = [mass*g;mass*g;mass*g;mass*g;g];
+% uU = [mass*g;mass*g;mass*g;mass*g;g];
+uU = [14.7;14.7;14.7;14.7;g];
 xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
 xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
@@ -63,9 +67,11 @@ U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = 10*diag([1 1 0 0 1 1 0 0 1 1 0 0]);
+% Q = 10*diag([1 1 0 0 1 1 0 0 1 1 0 0]);
+Q = 5*diag([3 1 1 1 3 1 1 1 10 3 0 0]);
 Q = Q + diag(ones(12,1));
-R = eye(nu);
+% R = eye(nu);
+R = 0.01*eye(nu);
 
 %% MPC Design
 % % The following lines of code implement an MPC where the terminal set is
@@ -110,6 +116,9 @@ xPred = zeros(n,N+1,M);
 feas = false([1,M]);
 predErr = zeros(n,M-N+1);
 % [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
+
+xk_1 = [];
+uk_1 = [];
 
 %% Simulation
 figure('Name','Trajectory')
