@@ -140,7 +140,22 @@ for t = 1:M
     % Save first optimal input of sequence
     uOpt(:,t) = u(:,1);
     % Compute next step of closed-loop trajectory
-    xOpt(:,t+1) = x(:,2);
+    if ~wind_disturbance && ~model_mismatch
+        xOpt(:,t+1) = x(:,2);
+    elseif wind_disturbance && ~model_mismatch
+        xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    elseif model_mismatch && ~wind_disturbance
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
+    else
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    end
+    
+    if ~dist_reject
+        xk_1 = [];
+    else
+        xk_1 = xOpt(:,t);
+        uk_1 = uOpt(:,t);
+    end
     
     % Plot Open Loop
     plot3(x(1,:),x(5,:),x(9,:),'r--')
@@ -225,9 +240,102 @@ legend('Motor 1','Motor 2','Motor 3','Motor 4')
 %     predErr(:,i) = [norm(err(1,:)) norm(err(2,:))]';
 % end
 
-xTest = zeros(n,M+1);
-xTest(:,1) = x0;
+% xTest = zeros(n,M+1);
+% xTest(:,1) = x0;
+% 
+% for i = 1:M
+%    xTest(:,i+1) = A*xTest(:,i) + B*uOpt(:,i); 
+% end
 
-for i = 1:M
-   xTest(:,i+1) = A*xTest(:,i) + B*uOpt(:,i); 
+%% Compare with LQR
+x0 = zeros(12,1);
+xk = x0;
+xOpt_2 = zeros(n,M+1);
+xOpt_2(:,1) = x0;
+uOpt_2 = zeros(5,M);
+for k =1:M
+    uk = [-K*(xk-Xd);g];
+    if ~wind_disturbance && ~model_mismatch
+        xk1 = A*xk + B*uk;
+    elseif wind_disturbance && ~model_mismatch
+        xk1 = A*xk + B*uk + G*f_wind(xk(9));
+    elseif ~wind_disturbance && model_mismatch
+        xk1 = A_tilda*xk + B_tilda*uk;
+    else
+        xk1 = A_tilda*xk + B_tilda*uk + G*f_wind(xk(9));
+    end
+    uOpt_2(:,k) = uk;
+    xOpt_2(:,k+1) = xk1;
+    xk = xk1;  
 end
+
+% Trajectory
+figure;
+plot3(xOpt_2(1,:),xOpt_2(5,:),xOpt_2(9,:),'bo-')
+xlabel('X')
+ylabel('Y')
+zlabel('Z')
+axis equal;
+grid on;
+
+% Position
+figure('Name','Position LQR')
+subplot(3,1,1)
+plot(xOpt_2(1,:))
+title('X position')
+ylabel('position(m)')
+subplot(3,1,2)
+plot(xOpt_2(5,:))
+title('Y position')
+ylabel('position(m)')
+subplot(3,1,3)
+plot(xOpt_2(9,:))
+title('Z position')
+ylabel('position(m)')
+xlabel('timestep(k)')
+
+% Velocity
+figure('Name','Velocity LQR')
+subplot(3,1,1)
+plot(xOpt_2(2,:),'r')
+title('X Velocity')
+ylabel('velocity(m/s)')
+subplot(3,1,2)
+plot(xOpt_2(6,:),'r')
+title('Y Velocity')
+ylabel('velocity(m/s)')
+subplot(3,1,3)
+plot(xOpt_2(10,:),'r')
+title('Z Velocity')
+ylabel('velocity(m/s)')
+xlabel('timestep(k)')
+
+% Orientation
+figure('Name','Orientation LQR')
+subplot(3,1,1)
+plot(xOpt_2(3,:),'k')
+title('Pitch')
+ylabel('pitch(rad)')
+subplot(3,1,2)
+plot(xOpt_2(7,:),'k')
+title('Roll')
+ylabel('roll(rad)')
+subplot(3,1,3)
+plot(xOpt_2(11,:),'k')
+title('Yaw')
+ylabel('Yaw(rad')
+xlabel('timestep(k)')
+
+% Motor Forces
+figure('Name','Motor Forces LQR')
+plot(uOpt_2(1,:))
+hold on
+plot(uOpt_2(2,:))
+plot(uOpt_2(3,:))
+plot(uOpt_2(4,:))
+title('Motor Forces')
+xlabel('timestep(k)')
+ylabel('Force(N)')
+legend('Motor 1','Motor 2','Motor 3','Motor 4')
+
+
