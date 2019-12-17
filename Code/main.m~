@@ -119,48 +119,16 @@ disturb.mu = 0 ;
 disturb.stddev = 0 ; 
 
 % data_pts_needed = 8 ; 
-iters_til_update = 5 ;
+iters_til_update = 8 ;
 dist_bin = [];
 update_dist = false ; 
 eps = 0.0001 ; 
 dist = 0;
 
 % List of real disturbances
-dReals = [0.2482;
-        0.2611;
-        0.0494;
-        0.0784;
-        0.1257;
-        0.1476;
-        0.1023;
-        0.0285;
-        0.3675;
-        0.3666;
-        0.0971;
-        0.3213;
-        0.3212;
-        0.2536;
-        0.0454;
-        0.2662;
-        0.0955;
-        0.2706;
-        0.1190;
-        0.0668;
-        0.1628;
-        0.1138;
-        0.1808;
-        0.2981;
-        0.2482;
-        0.2033;
-        0.1193;
-        0.2542;
-        0.2297;
-        0.0021;
-        0.3225;
-        0.3065;
-        0.0667;
-        0.0529;
-        0.0664] ; 
+dReals = [0.5456    0.6639    0.1602    0.4078    0.4415    0.1156    0.2304    0.2647    0.7696    0.7595    0.8938    0.7663    0.1036    0.7264 ...
+          0.7183    0.9440    0.8398    0.7667    0.4503    0.0278    0.4930    0.6211    0.2018    0.4188    0.4706    0.6522    0.1497    0.8718 ...
+          0.8771    0.0973    0.5610    0.3736    0.9238    0.9022    0.6248] 
 %% Simulation
 figure('Name','Trajectory')
 for t = 1:M
@@ -176,8 +144,8 @@ for t = 1:M
     end 
     
     % Check if we need to update the disturbance model on this iter.
-    % update_dist = t >= iters_til_update; 
-    update_dist = mod(t,iters_til_update) == 0;
+    update_dist = t >= iters_til_update; 
+    % update_dist = mod(t,iters_til_update) == 0;
     
     % Save open loop predictions
     xPred(:,:,t) = x;
@@ -204,7 +172,7 @@ for t = 1:M
     elseif stoc_dist_reject
         % Measure disturbance. Only store a scalar var -> d. Not vector G*d
         Gd = xOpt(:,t+1) - A*xOpt(:,t)-B*uOpt(:,t);
-        d = Gd(abs(Gd)>=eps) ; 
+        d = Gd(abs(Gd)>=eps) ;
 %         idx = mod(t, data_pts_needed)
 %         if idx == 0
 %             idx = data_pts_needed;
@@ -217,7 +185,7 @@ for t = 1:M
         end
         
         % Sample from disturbance model to get disturbance
-        dist = G*sampleDist(disturb) 
+        dist = G*sampleDist(disturb); 
     end
     
     % Plot Open Loop

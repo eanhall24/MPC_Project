@@ -7,6 +7,12 @@ u = sdpvar(nu,N);
 
 feas = false;
 
+if ~isempty(xk_1)
+    dist = x0 - A*xk_1-B*uk_1;
+else
+    dist = zeros(nx, 1) ; 
+end
+
 constr = [x(:,1) == x0];
 
 if isempty(Af)
