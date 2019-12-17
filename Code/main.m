@@ -65,9 +65,9 @@ Oinf=N_pos_inv(Acl,Xtilde);
 Af = Oinf.H(:,1:n);
 bf = Oinf.H(:,n+1);
 
-Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
+% Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 % Xd = [-1;0;0;0;3.5;0;0;0;4;0;0;0];
-% Xd = [3;0;0;0;1;0;0;0;2;0;pi/4;0];
+Xd = [3;0;0;0;1;0;0;0;2;0;pi/4;0];
 
 %% Simulation Setup
 M = 50;
@@ -155,12 +155,12 @@ end
 %% Plot Closed Loop
 
 time = 0:0.1:M*0.1;
-load('Pose1.mat')
-load('Motors1.mat')
+% load('Pose1.mat')
+% load('Motors1.mat')
 % load('Pose2.mat')
 % load('Motors2.mat')
-% load('Pose3.mat')
-% load('Motors3.mat')
+load('Pose3.mat')
+load('Motors3.mat')
 
 % Closed Loop Trajectory
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
@@ -173,8 +173,9 @@ axis equal;
 figure('Name','Trajectory')
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 hold on
-plot3(posX(350:end),posY(350:end),posZ(350:end),'ko-')
+% plot3(posX(350:end),posY(350:end),posZ(350:end),'ko-')
 % plot3(posX(454:end),posY(454:end),posZ(454:end),'ko-')
+plot3(posX(398:end),posY(398:end),posZ(398:end),'ko-')
 plot3(xOpt_2(1,:),xOpt_2(5,:),xOpt_2(9,:),'go-')
 legend('MPC','PD Controller','LQR')
 xlabel('X')
@@ -188,28 +189,37 @@ subplot(3,1,1)
 plot(time,xOpt(1,:))
 hold on
 plot(time,xOpt_2(1,:))
-plot(simTime(1:end-349)-simTime(1),posX(350:end))
+% plot(simTime(1:end-349)-simTime(1),posX(350:end))
+% plot(simTime(1:end-453)-simTime(1),posX(454:end))
+plot(simTime(1:end-397)-simTime(1),posX(398:end))
 title('X position')
 ylabel('position(m)')
 legend('MPC','LQR','PD Controller')
 xlim([0 5])
+grid on
 subplot(3,1,2)
 plot(time,xOpt(5,:))
 hold on
 plot(time,xOpt_2(5,:))
-plot(simTime(1:end-349)-simTime(1),posY(350:end))
+% plot(simTime(1:end-349)-simTime(1),posY(350:end))
+% plot(simTime(1:end-453)-simTime(1),posY(454:end))
+plot(simTime(1:end-397)-simTime(1),posY(398:end))
 title('Y position')
 ylabel('position(m)')
 xlim([0 5])
+grid on
 subplot(3,1,3)
 plot(time,xOpt(9,:))
 hold on
 plot(time,xOpt_2(9,:))
-plot(simTime(1:end-349)-simTime(1),posZ(350:end))
+% plot(simTime(1:end-349)-simTime(1),posZ(350:end))
+% plot(simTime(1:end-453)-simTime(1),posX(454:end))
+plot(simTime(1:end-397)-simTime(1),posZ(398:end))
 title('Z position')
 ylabel('position(m)')
 xlim([0 5])
 xlabel('time(s)')
+grid on
 
 % Velocity
 figure('Name','Velocity')
@@ -217,28 +227,37 @@ subplot(3,1,1)
 plot(time,xOpt(2,:))
 hold on
 plot(time,xOpt_2(2,:))
-plot(simTime(1:end-349)-simTime(1),velX(350:end))
+% plot(simTime(1:end-349)-simTime(1),velX(350:end))
+% plot(simTime(1:end-453)-simTime(1),velX(454:end))
+plot(simTime(1:end-397)-simTime(1),velX(398:end))
 title('X Velocity')
 legend('MPC','LQR','PD Controller')
 xlim([0 5])
 ylabel('velocity(m/s)')
+grid on
 subplot(3,1,2)
 plot(time,xOpt(6,:))
 hold on
 plot(time,xOpt_2(6,:))
-plot(simTime(1:end-349)-simTime(1),velY(350:end))
+% plot(simTime(1:end-349)-simTime(1),velY(350:end))
+% plot(simTime(1:end-453)-simTime(1),velY(454:end))
+plot(simTime(1:end-397)-simTime(1),velY(398:end))
 title('Y Velocity')
 xlim([0 5])
 ylabel('velocity(m/s)')
+grid on
 subplot(3,1,3)
 plot(time,xOpt(10,:))
 hold on
 plot(time,xOpt_2(10,:))
-plot(simTime(1:end-349)-simTime(1),velZ(350:end))
+% plot(simTime(1:end-349)-simTime(1),velZ(350:end))
+% plot(simTime(1:end-453)-simTime(1),velZ(454:end))
+plot(simTime(1:end-397)-simTime(1),velZ(398:end))
 title('Z Velocity')
 xlim([0 5])
 ylabel('velocity(m/s)')
 xlabel('time(s)')
+grid on
 
 % Orientation
 figure('Name','Orientation')
@@ -246,28 +265,37 @@ subplot(3,1,1)
 plot(time,xOpt(3,:))
 hold on
 plot(time,xOpt_2(3,:))
-plot(simTime(1:end-349)-simTime(1),pitch(350:end))
+% plot(simTime(1:end-349)-simTime(1),pitch(350:end))
+% plot(simTime(1:end-453)-simTime(1),pitch(454:end))
+plot(simTime(1:end-397)-simTime(1),pitch(398:end))
 title('Pitch')
 legend('MPC','LQR','PD Controller')
 xlim([0 5])
 ylabel('pitch(rad)')
+grid on
 subplot(3,1,2)
 plot(time,xOpt(7,:))
 hold on
 plot(time,xOpt_2(7,:))
-plot(simTime(1:end-349)-simTime(1),roll(350:end))
+% plot(simTime(1:end-349)-simTime(1),roll(350:end))
+% plot(simTime(1:end-453)-simTime(1),roll(454:end))
+plot(simTime(1:end-397)-simTime(1),roll(398:end))
 title('Roll')
 xlim([0 5])
 ylabel('roll(rad)')
+grid on
 subplot(3,1,3)
 plot(time,xOpt(11,:))
 hold on
 plot(time,xOpt_2(11,:))
-plot(simTime(1:end-349)-simTime(1),yaw(350:end))
+% plot(simTime(1:end-349)-simTime(1),yaw(350:end))
+% plot(simTime(1:end-453)-simTime(1),yaw(454:end))
+plot(simTime(1:end-397)-simTime(1),yaw(398:end))
 title('Yaw')
 ylabel('Yaw(rad')
 xlim([0 5])
 xlabel('time(s)')
+grid on
 
 % Motor Forces
 motor0 = smooth(motor0);
@@ -285,6 +313,7 @@ title('MPC')
 ylabel('Force(N)')
 xlim([0 5])
 legend('Motor 1','Motor 2','Motor 3','Motor 4')
+grid on
 subplot(3,1,2)
 plot(time(1:end-1),uOpt_2(1,:))
 hold on
@@ -295,17 +324,29 @@ title('LQR')
 ylabel('Force(N)')
 xlim([0 5])
 legend('Motor 1','Motor 2','Motor 3','Motor 4')
+grid on
 subplot(3,1,3)
-plot(telTime(1:end-174)-telTime(1),motor0(175:end))
+% plot(telTime(1:end-174)-telTime(1),motor0(175:end))
+% hold on
+% plot(telTime(1:end-174)-telTime(1),motor1(175:end))
+% plot(telTime(1:end-174)-telTime(1),motor2(175:end))
+% plot(telTime(1:end-174)-telTime(1),motor3(175:end))
+% plot(telTime(1:end-226)-telTime(1),motor0(227:end))
+% hold on
+% plot(telTime(1:end-226)-telTime(1),motor1(227:end))
+% plot(telTime(1:end-226)-telTime(1),motor2(227:end))
+% plot(telTime(1:end-226)-telTime(1),motor3(227:end))
+plot(telTime(1:end-198)-telTime(1),motor0(199:end))
 hold on
-plot(telTime(1:end-174)-telTime(1),motor1(175:end))
-plot(telTime(1:end-174)-telTime(1),motor2(175:end))
-plot(telTime(1:end-174)-telTime(1),motor3(175:end))
+plot(telTime(1:end-198)-telTime(1),motor1(199:end))
+plot(telTime(1:end-198)-telTime(1),motor2(199:end))
+plot(telTime(1:end-198)-telTime(1),motor3(199:end))
 title('PD')
 xlabel('time(s)')
 ylabel('Force(N)')
 xlim([0 5])
 legend('Motor 1','Motor 2','Motor 3','Motor 4')
+grid on
 
 %% Plot ROS Simulation
 % load('Pose1.mat')
