@@ -4,7 +4,7 @@ function [x_des, u_des] = path_gen(t, t_start, t_final, r, h)
 
 %constants
 g = 9.81;
-m = 32e-03;
+m = 0.688;
 
 %extract values from inputs
 nt = length(t);

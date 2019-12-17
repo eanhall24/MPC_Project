@@ -67,11 +67,11 @@ U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-% Q = 10*diag([1 1 0 0 1 1 0 0 1 1 0 0]);
-Q = 5*diag([3 1 1 1 3 1 1 1 10 3 0 0]);
+Q = 10*diag([1 1 0 0 1 1 0 0 1 1 0 0]);
+% Q = 5*diag([3 1 1 1 3 1 1 1 10 3 0 0]);
 Q = Q + diag(ones(12,1));
-% R = eye(nu);
-R = 0.01*eye(nu);
+R = .9*eye(nu);
+% R = 0.01*eye(nu);
 
 %% MPC Design
 % % The following lines of code implement an MPC where the terminal set is
@@ -103,9 +103,9 @@ bf = Oinf.H(:,n+1);
 Xd = [3;0;0;0;0;0;0;0;3;0;0;0];
 
 %% Simulation Setup
-M = 100;%40;
+M = 150;%40;
 % x0 = zeros(12,1);
-x0 = [2;0;0;0;0;0;0;0;3;0;0;0];
+x0 = [3;0;0;0;0;0;0;0;3;0;0;0];
 h = x0(9);
 r = 3;%x0(1);
 traj_follow = 1;
@@ -125,7 +125,7 @@ figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,t,h,r,traj_follow);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,t,h,r,traj_follow,G,xk_1,uk_1);
     
     if ~feas(t)
         warning('MPC problem infeasible--exiting simulation')
@@ -169,10 +169,29 @@ end
 
 % Trajectory
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
-xlabel('X')
-ylabel('Y')
-zlabel('Z')
+xlabel('X (m)')
+ylabel('Y (m)')
+zlabel('Z (m)')
 axis equal;
+hold on
+
+t_step = .1;
+t_vec = t_step*((1:M+1) -1);
+[x_des, ~] = path_gen(t_vec, 0, 5, r, h);
+plot3(x_des(1,:),x_des(5,:),x_des(9,:),'go-')
+
+figure
+hold on
+plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
+plot3(x_des(1,:),x_des(5,:),x_des(9,:),'ro-')
+title('Trajectory Following with Disturbance Rejection')
+legend('Actual Trajectory', 'Desired Trajectory')
+xlabel('X (m)')
+ylabel('Y (m)')
+zlabel('Z (m)')
+axis equal
+grid on
+hold off
 
 % Position
 figure('Name','Position')
@@ -248,94 +267,94 @@ legend('Motor 1','Motor 2','Motor 3','Motor 4')
 % end
 
 %% Compare with LQR
-x0 = zeros(12,1);
-xk = x0;
-xOpt_2 = zeros(n,M+1);
-xOpt_2(:,1) = x0;
-uOpt_2 = zeros(5,M);
-for k =1:M
-    uk = [-K*(xk-Xd);g];
-    if ~wind_disturbance && ~model_mismatch
-        xk1 = A*xk + B*uk;
-    elseif wind_disturbance && ~model_mismatch
-        xk1 = A*xk + B*uk + G*f_wind(xk(9));
-    elseif ~wind_disturbance && model_mismatch
-        xk1 = A_tilda*xk + B_tilda*uk;
-    else
-        xk1 = A_tilda*xk + B_tilda*uk + G*f_wind(xk(9));
-    end
-    uOpt_2(:,k) = uk;
-    xOpt_2(:,k+1) = xk1;
-    xk = xk1;  
-end
+% x0 = zeros(12,1);
+% xk = x0;
+% xOpt_2 = zeros(n,M+1);
+% xOpt_2(:,1) = x0;
+% uOpt_2 = zeros(5,M);
+% for k =1:M
+%     uk = [-K*(xk-Xd);g];
+%     if ~wind_disturbance && ~model_mismatch
+%         xk1 = A*xk + B*uk;
+%     elseif wind_disturbance && ~model_mismatch
+%         xk1 = A*xk + B*uk + G*f_wind(xk(9));
+%     elseif ~wind_disturbance && model_mismatch
+%         xk1 = A_tilda*xk + B_tilda*uk;
+%     else
+%         xk1 = A_tilda*xk + B_tilda*uk + G*f_wind(xk(9));
+%     end
+%     uOpt_2(:,k) = uk;
+%     xOpt_2(:,k+1) = xk1;
+%     xk = xk1;  
+% end
 
-% Trajectory
-figure;
-plot3(xOpt_2(1,:),xOpt_2(5,:),xOpt_2(9,:),'bo-')
-xlabel('X')
-ylabel('Y')
-zlabel('Z')
-axis equal;
-grid on;
+% % Trajectory
+% figure;
+% plot3(xOpt_2(1,:),xOpt_2(5,:),xOpt_2(9,:),'bo-')
+% xlabel('X')
+% ylabel('Y')
+% zlabel('Z')
+% axis equal;
+% grid on;
 
-% Position
-figure('Name','Position LQR')
-subplot(3,1,1)
-plot(xOpt_2(1,:))
-title('X position')
-ylabel('position(m)')
-subplot(3,1,2)
-plot(xOpt_2(5,:))
-title('Y position')
-ylabel('position(m)')
-subplot(3,1,3)
-plot(xOpt_2(9,:))
-title('Z position')
-ylabel('position(m)')
-xlabel('timestep(k)')
+% % Position
+% figure('Name','Position LQR')
+% subplot(3,1,1)
+% plot(xOpt_2(1,:))
+% title('X position')
+% ylabel('position(m)')
+% subplot(3,1,2)
+% plot(xOpt_2(5,:))
+% title('Y position')
+% ylabel('position(m)')
+% subplot(3,1,3)
+% plot(xOpt_2(9,:))
+% title('Z position')
+% ylabel('position(m)')
+% xlabel('timestep(k)')
 
-% Velocity
-figure('Name','Velocity LQR')
-subplot(3,1,1)
-plot(xOpt_2(2,:),'r')
-title('X Velocity')
-ylabel('velocity(m/s)')
-subplot(3,1,2)
-plot(xOpt_2(6,:),'r')
-title('Y Velocity')
-ylabel('velocity(m/s)')
-subplot(3,1,3)
-plot(xOpt_2(10,:),'r')
-title('Z Velocity')
-ylabel('velocity(m/s)')
-xlabel('timestep(k)')
+% % Velocity
+% figure('Name','Velocity LQR')
+% subplot(3,1,1)
+% plot(xOpt_2(2,:),'r')
+% title('X Velocity')
+% ylabel('velocity(m/s)')
+% subplot(3,1,2)
+% plot(xOpt_2(6,:),'r')
+% title('Y Velocity')
+% ylabel('velocity(m/s)')
+% subplot(3,1,3)
+% plot(xOpt_2(10,:),'r')
+% title('Z Velocity')
+% ylabel('velocity(m/s)')
+% xlabel('timestep(k)')
 
-% Orientation
-figure('Name','Orientation LQR')
-subplot(3,1,1)
-plot(xOpt_2(3,:),'k')
-title('Pitch')
-ylabel('pitch(rad)')
-subplot(3,1,2)
-plot(xOpt_2(7,:),'k')
-title('Roll')
-ylabel('roll(rad)')
-subplot(3,1,3)
-plot(xOpt_2(11,:),'k')
-title('Yaw')
-ylabel('Yaw(rad')
-xlabel('timestep(k)')
+% % Orientation
+% figure('Name','Orientation LQR')
+% subplot(3,1,1)
+% plot(xOpt_2(3,:),'k')
+% title('Pitch')
+% ylabel('pitch(rad)')
+% subplot(3,1,2)
+% plot(xOpt_2(7,:),'k')
+% title('Roll')
+% ylabel('roll(rad)')
+% subplot(3,1,3)
+% plot(xOpt_2(11,:),'k')
+% title('Yaw')
+% ylabel('Yaw(rad')
+% xlabel('timestep(k)')
 
-% Motor Forces
-figure('Name','Motor Forces LQR')
-plot(uOpt_2(1,:))
-hold on
-plot(uOpt_2(2,:))
-plot(uOpt_2(3,:))
-plot(uOpt_2(4,:))
-title('Motor Forces')
-xlabel('timestep(k)')
-ylabel('Force(N)')
-legend('Motor 1','Motor 2','Motor 3','Motor 4')
+% % Motor Forces
+% figure('Name','Motor Forces LQR')
+% plot(uOpt_2(1,:))
+% hold on
+% plot(uOpt_2(2,:))
+% plot(uOpt_2(3,:))
+% plot(uOpt_2(4,:))
+% title('Motor Forces')
+% xlabel('timestep(k)')
+% ylabel('Force(N)')
+% legend('Motor 1','Motor 2','Motor 3','Motor 4')
 
 

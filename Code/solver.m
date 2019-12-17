@@ -1,4 +1,4 @@
-function [xOpt,uOpt,feas] = solver(A, B, P, Q, R, N, x0, xL, xU, uL, uU, bf, Af, Xd, uRef, index, h, r, traj_follow)
+function [xOpt,uOpt,feas] = solver(A, B, P, Q, R, N, x0, xL, xU, uL, uU, bf, Af, Xd, uRef, index, h, r, traj_follow, G, xk_1, uk_1)
 yalmip('clear')
 nx = size(A,2);
 nu = size(B,2);
@@ -6,6 +6,10 @@ x = sdpvar(nx,N+1);
 u = sdpvar(nu,N);
 
 feas = false;
+
+if ~isempty(xk_1)
+    dist = x0 - A*xk_1-B*uk_1;
+end
 
 t_step = .1;
 t_vec = t_step*((1:N+1) + index - 2);
@@ -24,13 +28,21 @@ else
 end    
 
 cost = (x(:,N+1)-x_des(:,N+1))'*P*(x(:,N+1)-x_des(:,N+1));
-    constr = [constr, xL <= x(:,N+1),x(:,N+1)<= xU];
+    
+constr = [constr, xL <= x(:,N+1),x(:,N+1)<= xU];
+
 for k = 1:N
     constr = [constr, xL <= x(:,k),x(:,k)<= xU];
     
     constr = [constr, uL <= u(:,k),u(:,k) <= uU];
     
-    constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k)];
+%     constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k)];
+
+    if ~isempty(xk_1)
+        constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k) + dist];
+    else
+        constr = [constr, x(:,k+1) == A*x(:,k) + B*u(:,k)];
+    end
 
 %     cost = cost + (x(:,k) - x(:,N+1))'*Q*(x(:,k) - x(:,N+1)) + (u(1:4,k))'*R*(u(1:4,k)); % Add last input (u-uref)
         
