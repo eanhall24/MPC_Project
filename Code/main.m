@@ -3,6 +3,13 @@ close all
 clear
 clc
 
+load('Pose1.mat')
+load('Motors1.mat')
+load('Pose2.mat')
+load('Motors2.mat')
+load('Pose3.mat')
+load('Motors3.mat')
+
 %% Dynamics
 % Load Dynamics
 Dynamics;
@@ -62,7 +69,7 @@ bf = Oinf.H(:,n+1);
 Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 
 %% Simulation Setup
-M = 35;
+M = 50;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -153,15 +160,15 @@ xlabel('time(s)')
 % Velocity
 figure('Name','Velocity')
 subplot(3,1,1)
-plot(xOpt(2,:),'r')
+plot(time,xOpt(2,:),'r')
 title('X Velocity')
 ylabel('velocity(m/s)')
 subplot(3,1,2)
-plot(xOpt(6,:),'r')
+plot(time,xOpt(6,:),'r')
 title('Y Velocity')
 ylabel('velocity(m/s)')
 subplot(3,1,3)
-plot(xOpt(10,:),'r')
+plot(time,xOpt(10,:),'r')
 title('Z Velocity')
 ylabel('velocity(m/s)')
 xlabel('time(s)')
@@ -169,30 +176,115 @@ xlabel('time(s)')
 % Orientation
 figure('Name','Orientation')
 subplot(3,1,1)
-plot(xOpt(3,:),'k')
+plot(time,xOpt(3,:),'k')
 title('Pitch')
 ylabel('pitch(rad)')
 subplot(3,1,2)
-plot(xOpt(7,:),'k')
+plot(time,xOpt(7,:),'k')
 title('Roll')
 ylabel('roll(rad)')
 subplot(3,1,3)
-plot(xOpt(11,:),'k')
+plot(time,xOpt(11,:),'k')
 title('Yaw')
 ylabel('Yaw(rad')
 xlabel('time(s)')
 
 % Motor Forces
 figure('Name','Motor Forces')
-plot(uOpt(1,:))
+plot(time(1:end-1),uOpt(1,:))
 hold on
-plot(uOpt(2,:))
-plot(uOpt(3,:))
-plot(uOpt(4,:))
+plot(time(1:end-1),uOpt(2,:))
+plot(time(1:end-1),uOpt(3,:))
+plot(time(1:end-1),uOpt(4,:))
 title('Motor Forces')
 xlabel('time(s)')
 ylabel('Force(N)')
 legend('Motor 1','Motor 2','Motor 3','Motor 4')
+
+%% Plot ROS Simulation
+load('Pose1.mat')
+load('Motors1.mat')
+% load('Pose2.mat')
+% load('Motors2.mat')
+% load('Pose3.mat')
+% load('Motors3.mat')
+figure('Name','ROS Trajectory')
+plot3(posX,posY,posZ,'bo-')
+xlabel('X')
+ylabel('Y')
+zlabel('Z')
+axis equal;
+
+% Position
+figure('Name','ROS Position')
+subplot(3,1,1)
+plot(mocapTime,posX)
+title('X position')
+ylabel('position(m)')
+subplot(3,1,2)
+plot(mocapTime,posY)
+title('Y position')
+ylabel('position(m)')
+subplot(3,1,3)
+plot(mocapTime,posZ)
+title('Z position')
+ylabel('position(m)')
+xlabel('time(s)')
+
+% Velocity
+VelX = zeros(size(mocapTime,1),1);
+VelY = zeros(size(mocapTime,1),1);
+VelZ = zeros(size(mocapTime,1),1);
+for i = 1:size(mocapTime,1)-1
+    VelX(i) = (posX(i+1)-posX(i))/(mocapTime(i+1)-mocapTime(i));
+    VelY(i) = (posY(i+1)-posY(i))/(mocapTime(i+1)-mocapTime(i));
+    VelZ(i) = (posZ(i+1)-posZ(i))/(mocapTime(i+1)-mocapTime(i));
+end
+figure('Name','ROS Velocity')
+subplot(3,1,1)
+plot(mocapTime,VelX,'r')
+title('X Velocity')
+ylabel('velocity(m/s)')
+subplot(3,1,2)
+plot(mocapTime,VelY,'r')
+title('Y Velocity')
+ylabel('velocity(m/s)')
+subplot(3,1,3)
+plot(mocapTime,VelZ,'r')
+title('Z Velocity')
+ylabel('velocity(m/s)')
+xlabel('time(s)')
+
+% Orientation
+figure('Name','ROS Orientation')
+subplot(3,1,1)
+plot(mocapTime,pitch,'k')
+title('Pitch')
+ylabel('pitch(rad)')
+subplot(3,1,2)
+plot(mocapTime,roll,'k')
+title('Roll')
+ylabel('roll(rad)')
+subplot(3,1,3)
+plot(mocapTime,yaw,'k')
+title('Yaw')
+ylabel('Yaw(rad')
+xlabel('time(s)')
+
+% Motor Forces
+figure('Name','ROS Motor Forces')
+plot(telTime,motor0)
+hold on
+plot(telTime,motor1)
+plot(telTime,motor2)
+plot(telTime,motor3)
+title('Motor Forces')
+xlabel('time(s)')
+ylabel('Force(N)')
+legend('Motor 1','Motor 2','Motor 3','Motor 4')
+
+
+
 
 % Find the prediction error
 % for i = 1:length(predErr)
