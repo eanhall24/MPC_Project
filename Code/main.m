@@ -3,12 +3,12 @@ close all
 clear
 clc
 
-load('Pose1.mat')
-load('Motors1.mat')
-load('Pose2.mat')
-load('Motors2.mat')
-load('Pose3.mat')
-load('Motors3.mat')
+% load('Pose1.mat')
+% load('Motors1.mat')
+% load('Pose2.mat')
+% load('Motors2.mat')
+% load('Pose3.mat')
+% load('Motors3.mat')
 
 %% Dynamics
 % Load Dynamics
@@ -218,39 +218,31 @@ axis equal;
 % Position
 figure('Name','ROS Position')
 subplot(3,1,1)
-plot(mocapTime,posX)
+plot(simTime,posX)
 title('X position')
 ylabel('position(m)')
 subplot(3,1,2)
-plot(mocapTime,posY)
+plot(simTime,posY)
 title('Y position')
 ylabel('position(m)')
 subplot(3,1,3)
-plot(mocapTime,posZ)
+plot(simTime,posZ)
 title('Z position')
 ylabel('position(m)')
 xlabel('time(s)')
 
 % Velocity
-VelX = zeros(size(mocapTime,1),1);
-VelY = zeros(size(mocapTime,1),1);
-VelZ = zeros(size(mocapTime,1),1);
-for i = 1:size(mocapTime,1)-1
-    VelX(i) = (posX(i+1)-posX(i))/(mocapTime(i+1)-mocapTime(i));
-    VelY(i) = (posY(i+1)-posY(i))/(mocapTime(i+1)-mocapTime(i));
-    VelZ(i) = (posZ(i+1)-posZ(i))/(mocapTime(i+1)-mocapTime(i));
-end
 figure('Name','ROS Velocity')
 subplot(3,1,1)
-plot(mocapTime,VelX,'r')
+plot(simTime,velX,'r')
 title('X Velocity')
 ylabel('velocity(m/s)')
 subplot(3,1,2)
-plot(mocapTime,VelY,'r')
+plot(simTime,velY,'r')
 title('Y Velocity')
 ylabel('velocity(m/s)')
 subplot(3,1,3)
-plot(mocapTime,VelZ,'r')
+plot(simTime,velZ,'r')
 title('Z Velocity')
 ylabel('velocity(m/s)')
 xlabel('time(s)')
@@ -258,15 +250,15 @@ xlabel('time(s)')
 % Orientation
 figure('Name','ROS Orientation')
 subplot(3,1,1)
-plot(mocapTime,pitch,'k')
+plot(simTime,pitch,'k')
 title('Pitch')
 ylabel('pitch(rad)')
 subplot(3,1,2)
-plot(mocapTime,roll,'k')
+plot(simTime,roll,'k')
 title('Roll')
 ylabel('roll(rad)')
 subplot(3,1,3)
-plot(mocapTime,yaw,'k')
+plot(simTime,yaw,'k')
 title('Yaw')
 ylabel('Yaw(rad')
 xlabel('time(s)')
