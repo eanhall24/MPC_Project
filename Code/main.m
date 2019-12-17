@@ -6,9 +6,9 @@ clc
 %% Dynamics
 % Load Dynamics
 Dynamics;
-wind_disturbance = 1;
+wind_disturbance = 0;
 model_mismatch = 0;
-dist_reject = 1;
+dist_reject = 0;
 
 
 
@@ -125,6 +125,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Plot Closed Loop
 
+time = 0:0.1:M*0.1;
+
 % Trajectory
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 xlabel('X')
@@ -135,18 +137,18 @@ axis equal;
 % Position
 figure('Name','Position')
 subplot(3,1,1)
-plot(xOpt(1,:))
+plot(time,xOpt(1,:))
 title('X position')
 ylabel('position(m)')
 subplot(3,1,2)
-plot(xOpt(5,:))
+plot(time,xOpt(5,:))
 title('Y position')
 ylabel('position(m)')
 subplot(3,1,3)
-plot(xOpt(9,:))
+plot(time,xOpt(9,:))
 title('Z position')
 ylabel('position(m)')
-xlabel('timestep(k)')
+xlabel('time(s)')
 
 % Velocity
 figure('Name','Velocity')
@@ -162,7 +164,7 @@ subplot(3,1,3)
 plot(xOpt(10,:),'r')
 title('Z Velocity')
 ylabel('velocity(m/s)')
-xlabel('timestep(k)')
+xlabel('time(s)')
 
 % Orientation
 figure('Name','Orientation')
@@ -178,7 +180,7 @@ subplot(3,1,3)
 plot(xOpt(11,:),'k')
 title('Yaw')
 ylabel('Yaw(rad')
-xlabel('timestep(k)')
+xlabel('time(s)')
 
 % Motor Forces
 figure('Name','Motor Forces')
@@ -188,7 +190,7 @@ plot(uOpt(2,:))
 plot(uOpt(3,:))
 plot(uOpt(4,:))
 title('Motor Forces')
-xlabel('timestep(k)')
+xlabel('time(s)')
 ylabel('Force(N)')
 legend('Motor 1','Motor 2','Motor 3','Motor 4')
 
