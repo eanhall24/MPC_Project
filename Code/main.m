@@ -8,8 +8,8 @@ clc
 Dynamics;
 wind_disturbance = 1;
 model_mismatch = 0;
-dist_reject = 0;
-stoc_dist_reject = 1;
+dist_reject = 1;
+stoc_dist_reject = 0;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -189,6 +189,7 @@ for t = 1:M
     % Check if we need to update the disturbance model on this iter.
     % update_dist = t >= iters_til_update; 
     update_dist = mod(t,iters_til_update) == 0;
+%     update_dist = t > iters_til_update;
 
     % Save open loop predictions
     xPred(:,:,t) = x;
@@ -263,9 +264,10 @@ plot3(x_des(1,:),x_des(5,:),x_des(9,:),'go-')
 figure
 hold on
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
-plot3(x_des(1,:),x_des(5,:),x_des(9,:),'ro-')
-title('Trajectory Following with Disturbance Rejection')
-legend('Actual Trajectory', 'Desired Trajectory')
+plot3(x_des(1,:),x_des(5,:),x_des(9,:),'go-')
+% plot3(x_old(1,:),x_old(5,:),x_old(9,:),'ro-')
+title('Trajectory Following with Height-Dependent Disturbance')
+legend('Path without Disturbance Rejection', 'Desired Trajectory')%,'Path with Disturbance Rejection')
 xlabel('X (m)')
 ylabel('Y (m)')
 zlabel('Z (m)')
