@@ -6,33 +6,63 @@ clc
 %% Dynamics
 % Load Dynamics
 Dynamics;
+wind_disturbance = 1;
+model_mismatch = 0;
+dist_reject = 1;
 
 
 
 %% MPC Horizon
-N = 25;
+N = 3;
+% N = 6;
 n = size(A,2);
+nu = 4;
 
 %% State and Input Constraints
-uL = [0.025*mass*g;0.025*mass*g;0.025*mass*g;0.025*mass*g;g];
+% uL = [0.025*mass*g;0.025*mass*g;0.025*mass*g;0.025*mass*g;g];
+uL = [zeros(4,1);g];
 uU = [14.7;14.7;14.7;14.7;g];
 xL = [-5;-20;-pi/6;-10000;-5;-20;-pi/6;-10000;0;-20;-pi;-10000];
 xU = [5;20;pi/6;10000;5;20;pi/6;10000;5;20;pi;10000];
 
+X = Polyhedron('lb',xL,'ub',xU);
+U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
+
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = diag([1 1 1 1 1 1 1 1 1 1 1 1]);
-R = eye(5);
+Q = 5*diag([3 1 1 1 3 1 1 1 10 3 0 0]);
+Q = Q + diag(ones(12,1));
+% R = 1*eye(nu);
+R = 0.01*eye(nu);
+% Q = diag(ones(12,1));
+% R = eye(nu);
 
 %% MPC Design
-% The following lines of code implement an MPC where the terminal set is
-% equal to xN
-P = Q;
-xN = [-3;0;0;0;4;0;0;0;2;0;0;0];
-bf = xN;
+%% The following lines of code implement an MPC where the terminal set is
+% % equal to xN
+% P = Q;
+% xN = [2;0;0;0;2;0;0;0;2;0;0;0];
+% bf = xN;
+% Af = [];
+
+%% The following for bigger Xf (coming from LQR Oinf)
+% Closed loop system of 2c
+[K,P]=dlqr(A,B(:,1:nu),Q,R);
+% closed loop system
+Acl=A-B(:,1:nu)*K;
+% remeber to convet input constraits in state constraints
+Xtilde=X.intersect(Polyhedron('H',[-U.H(:,1:nu)*K U.H(:,nu+1)])); 
+Oinf=N_pos_inv(Acl,Xtilde);
+% figure(50);
+% plot(Oinf); title('Xf');
+
+Af = Oinf.H(:,1:n);
+bf = Oinf.H(:,n+1);
+
+Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 
 %% Simulation Setup
-M = 50;
+M = 35;
 x0 = zeros(12,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -42,15 +72,18 @@ feas = false([1,M]);
 predErr = zeros(n,M-N+1);
 % [xOpt, uOpt, feas] = solver(A,B,P,Q,R,N,x0,xL,xU,uL,uU,xN,[]);
 
+xk_1 = [];
+uk_1 = [];
+
 %% Simulation
 figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,[]);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,G,xk_1,uk_1);
     
     if ~feas(t)
-        warning('MPC problem infeasible--exiting simulation')
+        fprintf('MPC problem infeasible--exiting simulation')
         xOpt = [];
         uOpt = [];
         return;
@@ -62,7 +95,22 @@ for t = 1:M
     % Save first optimal input of sequence
     uOpt(:,t) = u(:,1);
     % Compute next step of closed-loop trajectory
-    xOpt(:,t+1) = x(:,2);
+    if ~wind_disturbance && ~model_mismatch
+        xOpt(:,t+1) = x(:,2);
+    elseif wind_disturbance && ~model_mismatch
+        xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    elseif model_mismatch && ~wind_disturbance
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
+    else
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(9,t));
+    end
+    
+    if ~dist_reject
+        xk_1 = [];
+    else
+        xk_1 = xOpt(:,t);
+        uk_1 = uOpt(:,t);
+    end
     
     % Plot Open Loop
     plot3(x(1,:),x(5,:),x(9,:),'r--')
@@ -82,6 +130,7 @@ plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 xlabel('X')
 ylabel('Y')
 zlabel('Z')
+axis equal;
 
 % Position
 figure('Name','Position')
@@ -194,4 +243,3 @@ legend('Motor 1','Motor 2','Motor 3','Motor 4')
 % ylim([0 1])
 % 
 % figure(2)
-% plot(x(9,:))
