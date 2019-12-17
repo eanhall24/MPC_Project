@@ -8,7 +8,8 @@ clc
 Dynamics;
 wind_disturbance = 1;
 model_mismatch = 0;
-dist_reject = 1;
+dist_reject = 0;
+stoc_dist_reject = 1;
 
 %% Continuous System Test
 % The quadcopter should slow down after each input and hover at the end.
@@ -120,12 +121,63 @@ predErr = zeros(n,M-N+1);
 xk_1 = [];
 uk_1 = [];
 
+% Create initial model of disturbance
+d_min = -1 ; 
+d_max = 1 ; 
+disturb.range = [d_min d_max] ; 
+disturb.mu = 0 ;
+disturb.stddev = 0 ; 
+
+% data_pts_needed = 8 ; 
+iters_til_update = 25;%10;% 5 ;
+dist_bin = [];
+update_dist = false ; 
+eps = 0.0001 ; 
+dist = 0;
+
+% List of real disturbances
+dReals = [0.2482;
+        0.2611;
+        0.0494;
+        0.0784;
+        0.1257;
+        0.1476;
+        0.1023;
+        0.0285;
+        0.3675;
+        0.3666;
+        0.0971;
+        0.3213;
+        0.3212;
+        0.2536;
+        0.0454;
+        0.2662;
+        0.0955;
+        0.2706;
+        0.1190;
+        0.0668;
+        0.1628;
+        0.1138;
+        0.1808;
+        0.2981;
+        0.2482;
+        0.2033;
+        0.1193;
+        0.2542;
+        0.2297;
+        0.0021;
+        0.3225;
+        0.3065;
+        0.0667;
+        0.0529;
+        0.0664] ; 
+    
 %% Simulation
 figure('Name','Trajectory')
 for t = 1:M
     fprintf('Solving simstep: %i\n',t)
     
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,t,h,r,traj_follow,G,xk_1,uk_1);
+    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,t,h,r,traj_follow,dist);
     
     if ~feas(t)
         warning('MPC problem infeasible--exiting simulation')
@@ -134,27 +186,55 @@ for t = 1:M
         return;
     end 
     
+    % Check if we need to update the disturbance model on this iter.
+    % update_dist = t >= iters_til_update; 
+    update_dist = mod(t,iters_til_update) == 0;
+
     % Save open loop predictions
     xPred(:,:,t) = x;
     
     % Save first optimal input of sequence
     uOpt(:,t) = u(:,1);
     % Compute next step of closed-loop trajectory
+    dReal = f_wind(xOpt(9,t)) ; 
+%     dReal = dReals(t) ;
     if ~wind_disturbance && ~model_mismatch
         xOpt(:,t+1) = x(:,2);
     elseif wind_disturbance && ~model_mismatch
-        xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(9,t));
+        xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*dReal;
     elseif model_mismatch && ~wind_disturbance
         xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
     else
-        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(9,t));
+        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*dReal;
     end
     
-    if ~dist_reject
-        xk_1 = [];
-    else
-        xk_1 = xOpt(:,t);
-        uk_1 = uOpt(:,t);
+%     if ~dist_reject
+%         xk_1 = [];
+%     else
+%         xk_1 = xOpt(:,t);
+%         uk_1 = uOpt(:,t);
+%     end
+
+    if dist_reject
+        dist = xOpt(:,t+1) - A*xOpt(:,t)-B*uOpt(:,t);
+    elseif stoc_dist_reject
+        % Measure disturbance. Only store a scalar var -> d. Not vector G*d
+        Gd = xOpt(:,t+1) - A*xOpt(:,t)-B*uOpt(:,t);
+        d = Gd(abs(Gd)>=eps) ; 
+%         idx = mod(t, data_pts_needed)
+%         if idx == 0
+%             idx = data_pts_needed;
+%         end
+        dist_bin = [dist_bin d] ; 
+        
+        % Update disturbance model if time
+        if update_dist
+            disturb = updateDisturbModel(disturb, dist_bin);
+            dist_bin = [];              
+        end
+        
+        % Sample from disturbance model to get disturbance
+        dist = G*sampleDist(disturb); 
     end
     
     % Plot Open Loop
@@ -357,4 +437,19 @@ legend('Motor 1','Motor 2','Motor 3','Motor 4')
 % ylabel('Force(N)')
 % legend('Motor 1','Motor 2','Motor 3','Motor 4')
 
+
+function disturb = updateDisturbModel(disturb, bin)
+    % Calculate mu and standard deviation for the gaussian distribution
+    disturb.mu = mean(bin);  
+    total = 0 ; 
+    for i=1:length(bin)
+        total = total + (bin(i)-disturb.mu)^2 ; 
+    end
+    disturb.stddev = sqrt(total/length(bin));
+end
+
+function new_dist = sampleDist(disturb)
+    % new_dist = normrnd(disturb.mu, disturb.stddev)
+    new_dist = disturb.mu 
+end
 
