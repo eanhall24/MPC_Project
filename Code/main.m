@@ -162,7 +162,7 @@ load('Motors1.mat')
 % load('Pose3.mat')
 % load('Motors3.mat')
 
-% Trajectory
+% Closed Loop Trajectory
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 xlabel('X')
 ylabel('Y')
@@ -174,6 +174,7 @@ figure('Name','Trajectory')
 plot3(xOpt(1,:),xOpt(5,:),xOpt(9,:),'bo-')
 hold on
 plot3(posX(350:end),posY(350:end),posZ(350:end),'ko-')
+% plot3(posX(454:end),posY(454:end),posZ(454:end),'ko-')
 plot3(xOpt_2(1,:),xOpt_2(5,:),xOpt_2(9,:),'go-')
 legend('MPC','PD Controller','LQR')
 xlabel('X')
