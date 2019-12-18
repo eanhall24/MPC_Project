@@ -1,5 +1,5 @@
 %% Drone Dynamics
-clear
+% clear
 clc
 % Variables
 syms s1 v1 theta q s2 v2 phi p s3 v3 psi r T n1 n2 n3 cp1 cp2 cp3 cp4

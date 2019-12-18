@@ -234,7 +234,6 @@ for t = 1:M
         
     end
 
-
     % Compute next step of closed-loop trajectory
     if MPC_continue 
         if ~wind_disturbance && ~model_mismatch
