@@ -19,17 +19,17 @@ nu = 4;
 
 %% State and Input Constraints
 % uL = [0.025*mass*g;0.025*mass*g;0.025*mass*g;0.025*mass*g;g];
-uL = [0;-100;-100;-100;g];
-uU = [12;100;100;100;g];
-xL = [-5;-20;-pi/6;-5;-20;-pi/6;0;-20;-pi];
-xU = [5;20;pi/6;5;20;pi/6;5;20;pi];
+uL = [2;-100;-100;-100;g];
+uU = [20;100;100;100;g];
+xL = [-4;-1;-pi/6;-4;-1;-pi/6;0;-1;-pi];
+xU = [4;1;pi/6;4;1;pi/6;4;1;pi];
 
 X = Polyhedron('lb',xL,'ub',xU);
 U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = 5*diag([3 1 1 3 1 1 10 3 0.5]);
+Q = diag([3 1 1 3 1 1 10 3 0.5]);
 Q = Q + diag(ones(9,1));
 % R = 1*eye(nu);
 R = 0.01*eye(nu);
@@ -60,7 +60,7 @@ bf = Oinf.H(:,n+1);
 
 % Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 % Xd = [-1;0;0;0;3.5;0;0;0;4;0;0;0];
-Xd = [1;0;0;1;0;0;1;0;pi/4];
+Xd = [0;0;0;0;0;0;1;0;0];
 
 %% Simulation Setup
 M = 50;

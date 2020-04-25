@@ -59,16 +59,16 @@ A = [0 1 0 0 0 0 0 0 0
       0 0 0 0 0
       0 1 0 0 0
       0 0 0 0 0
-      1/mass 0 0 0 -1
+      1 0 0 0 -1
       0 0 0 1 0];
   
-C = eye(12);
+C = eye(9);
 
 D = 0;
 
 E = [0;0;0;0;0;-g;0;0;0;0;0;0];
 
-G = zeros(12,1);
+G = zeros(9,1);
 G(6) = 1;
 
 % f_wind = @(z) 0.2*z^2;
@@ -83,7 +83,7 @@ B = dsys.B;
 C = dsys.C;
 D = dsys.D;
 
-uRef = [mass*g;0;0;0]; % For other kind of final states run optimization from slides
+uRef = [g;0;0;0]; % For other kind of final states run optimization from slides
 
 %% Model mismatch:
 

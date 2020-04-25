@@ -3,70 +3,20 @@
 % control objective, and publishing all the inputs through a feedforward
 % method.
 
-%% MPC @ [0,0,1]
-% close all
-% clear
-% clc
-% 
-% load('MPC_posx.mat')
-% load('MPC_posy.mat')
-% load('MPC_posz.mat')
-% load('MPC_time.mat')
-% 
-% Tindex = 1;
-% 
-% for i = 1:length(posz)
-%     if posz(i) > 0
-%         Tindex = i-1;
-%         break;
-%     end
-% end
-% 
-% time = time - time(Tindex);
-% desPos = [0;0;1];
-% lower = desPos - 0.02*desPos;
-% upper = desPos + 0.02*desPos;
-% ss_index = 1;
-% 
-% for i = Tindex:length(posz)
-%     if posz(i) < lower(3) || posz(i) > upper(3)
-%         ss_index = i;
-%     end
-% end
-% 
-% settlingTime = time(ss_index);
-% 
-% figure('Name','MPC')
-% plot(time(Tindex:end),posx(Tindex:end),'b')
-% hold on
-% plot(time(Tindex:end),posy(Tindex:end),'g')
-% plot(time(Tindex:end),posz(Tindex:end),'r')
-% xline(settlingTime,'k');
-% yline(lower(3),'--k');
-% yline(upper(3),'--k');
-% ylim([0 1.1])
-% xlabel('Time(s)')
-% ylabel('Position(m)')
-% legend('posx','posy','posz','settling time')
-% title('MPC: Target [0,0,1]')
-% 
-% disp('The settling time for the MPC controller is:')
-% disp(settlingTime)
-
 %% MPC @ [0,0,1] with same gains as PD
 close all
 clear
 clc
 
-load('MPC3_posx.mat')
-load('MPC3_posy.mat')
-load('MPC3_posz.mat')
-load('MPC3_time.mat')
-load('MPC3_teltime.mat')
-load('MPC3_mot1.mat')
-load('MPC3_mot2.mat')
-load('MPC3_mot3.mat')
-load('MPC3_mot4.mat')
+load('MPC_posx.mat')
+load('MPC_posy.mat')
+load('MPC_posz.mat')
+load('MPC_time.mat')
+load('MPC_teltime.mat')
+load('MPC_mot1.mat')
+load('MPC_mot2.mat')
+load('MPC_mot3.mat')
+load('MPC_mot4.mat')
 
 Tindex = 1;
 
@@ -92,13 +42,7 @@ end
 settlingTime = time(ss_index);
 mpcsettlingTime = settlingTime;
 
-for i = 1:length(mot1)
-    if mot1(i) > 0.1
-        telTindex = i-1;
-        break;
-    end
-end
-
+telTindex = floor(Tindex/2);
 teltime = teltime - teltime(telTindex);
 
 mpcMax = max(mot1);
@@ -126,6 +70,7 @@ plot(teltime(telTindex:end),mot3(telTindex:end))
 plot(teltime(telTindex:end),mot4(telTindex:end))
 xlabel('Time(s)')
 ylabel('Motor Force(N)')
+ylim([1.5 2.5])
 legend('motor 1','motor 2','motor 3','motor 4')
 
 disp('The settling time for the MPC controller is:')
@@ -168,13 +113,7 @@ end
 settlingTime = time(ss_index);
 rates_settlingTime = settlingTime;
 
-for i = 1:length(mot1)
-    if mot1(i) > 0.1
-        telTindex = i-1;
-        break;
-    end
-end
-
+telTindex = floor(Tindex/2);
 teltime = teltime - teltime(telTindex);
 
 ratesMax = max(mot1);
@@ -202,6 +141,7 @@ plot(teltime(telTindex:end),mot3(telTindex:end))
 plot(teltime(telTindex:end),mot4(telTindex:end))
 xlabel('Time(s)')
 ylabel('Motor Force(N)')
+ylim([1.5 2.5])
 legend('motor 1','motor 2','motor 3','motor 4')
 
 disp('The settling time for the MPC controller is:')
