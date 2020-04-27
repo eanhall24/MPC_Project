@@ -257,7 +257,7 @@ for i = 1:length(time)
     end
 end
 
-desPos = [2;0;0];
+desPos = [4;0;0];
 lower = desPos - 0.02*desPos;
 upper = desPos + 0.02*desPos;
 ss_index = 1;
@@ -338,7 +338,7 @@ for i = 1:length(time)
     end
 end
 
-desPos = [2;0;0];
+desPos = [4;0;0];
 lower = desPos - 0.02*desPos;
 upper = desPos + 0.02*desPos;
 ss_index = 1;
