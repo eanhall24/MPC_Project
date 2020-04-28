@@ -3,7 +3,7 @@ close all
 clear
 clc
 
-Vertical_Analysis;
-Horizontal_Analysis;
-Braking_Analysis;
 Landing_Analysis;
+Braking_Analysis;
+Horizontal_Analysis;
+Vertical_Analysis;

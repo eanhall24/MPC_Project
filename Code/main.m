@@ -29,10 +29,9 @@ U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = diag([3 1 1 3 1 1 10 3 0.5]);
-Q = Q + diag(ones(9,1));
+Q = 0.1*diag([20 20 16 58 58 3.9 0.1 0.1 0.1]);
 % R = 1*eye(nu);
-R = 0.01*eye(nu);
+R = 0.1*eye(nu);
 % Q = diag(ones(12,1));
 % R = eye(nu);
 
@@ -60,10 +59,10 @@ bf = Oinf.H(:,n+1);
 
 % Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 % Xd = [-1;0;0;0;3.5;0;0;0;4;0;0;0];
-Xd = [0;0;0;0;0;0;1;0;0];
+Xd = [4;0;0;0;0;0;0;0;0];
 
 %% Simulation Setup
-M = 50;
+M = 100;
 x0 = zeros(9,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
@@ -80,9 +79,9 @@ uk_1 = [];
 xk = x0;
 xOpt_2 = zeros(n,M+1);
 xOpt_2(:,1) = x0;
-uOpt_2 = zeros(5,M);
+uOpt_2 = zeros(4,M);
 for k =1:M
-    uk = [-K*(xk-Xd);g];
+    uk = [-K*(xk-Xd)];
     if ~wind_disturbance && ~model_mismatch
         xk1 = A*xk + B*uk;
     elseif wind_disturbance && ~model_mismatch
@@ -90,7 +89,7 @@ for k =1:M
     elseif ~wind_disturbance && model_mismatch
         xk1 = A_tilda*xk + B_tilda*uk;
     else
-        xk1 = A_tilda*xk + B_tilda*uk + G*f_wind(xk(9));
+        xk1 = A*xk + B*uk - E;
     end
     uOpt_2(:,k) = uk;
     xOpt_2(:,k+1) = xk1;
@@ -98,224 +97,224 @@ for k =1:M
 end
 
 %% Simulation
-figure('Name','Trajectory')
-for t = 1:M
-    fprintf('Solving simstep: %i\n',t)
-    
-    [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,G,xk_1,uk_1);
-    
-    if ~feas(t)
-        fprintf('MPC problem infeasible--exiting simulation')
-        xOpt = [];
-        uOpt = [];
-        return;
-    end 
-    
-    % Save open loop predictions
-    xPred(:,:,t) = x;
-    
-    % Save first optimal input of sequence
-    uOpt(:,t) = u(:,1);
-    % Compute next step of closed-loop trajectory
-    if ~wind_disturbance && ~model_mismatch
-        xOpt(:,t+1) = x(:,2);
-    elseif wind_disturbance && ~model_mismatch
-        xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(7,t));
-    elseif model_mismatch && ~wind_disturbance
-        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
-    else
-        xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(7,t));
-    end
-    
-    if ~dist_reject
-        xk_1 = [];
-    else
-        xk_1 = xOpt(:,t);
-        uk_1 = uOpt(:,t);
-    end
-    
-    % Plot Open Loop
-    plot3(x(1,:),x(4,:),x(7,:),'r--')
-    xlim([-5 5])
-    ylim([-5 5])
-    zlim([0 5])
-    grid on
-    hold on
-    pause(0.1)
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Plot Closed Loop
-
-time = 0:0.1:M*0.1;
-% load('Pose1.mat')
-% load('Motors1.mat')
-% load('Pose2.mat')
-% load('Motors2.mat')
-% load('Pose3.mat')
-% load('Motors3.mat')
-
-% Closed Loop Trajectory
-plot3(xOpt(1,:),xOpt(4,:),xOpt(7,:),'bo-')
-xlabel('X')
-ylabel('Y')
-zlabel('Z')
-axis equal;
-
-% Trajectory
-figure('Name','Trajectory')
-plot3(xOpt(1,:),xOpt(4,:),xOpt(7,:),'bo-')
-hold on
-% plot3(posX(350:end),posY(350:end),posZ(350:end),'ko-')
-% plot3(posX(454:end),posY(454:end),posZ(454:end),'ko-')
-% plot3(posX(398:end),posY(398:end),posZ(398:end),'ko-')
-plot3(xOpt_2(1,:),xOpt_2(4,:),xOpt_2(7,:),'go-')
-legend('MPC','LQR')
-xlabel('X')
-ylabel('Y')
-zlabel('Z')
-axis equal;
-
-% Position
-figure('Name','Position')
-subplot(3,1,1)
-plot(time,xOpt(1,:))
-hold on
-plot(time,xOpt_2(1,:))
-% plot(simTime(1:end-349)-simTime(1),posX(350:end))
-% plot(simTime(1:end-453)-simTime(1),posX(454:end))
-% plot(simTime(1:end-397)-simTime(1),posX(398:end))
-title('X position')
-ylabel('position(m)')
-legend('MPC','LQR','PD Controller')
-xlim([0 5])
-grid on
-subplot(3,1,2)
-plot(time,xOpt(4,:))
-hold on
-plot(time,xOpt_2(4,:))
-% plot(simTime(1:end-349)-simTime(1),posY(350:end))
-% plot(simTime(1:end-453)-simTime(1),posY(454:end))
-% plot(simTime(1:end-397)-simTime(1),posY(398:end))
-title('Y position')
-ylabel('position(m)')
-xlim([0 5])
-grid on
-subplot(3,1,3)
-plot(time,xOpt(7,:))
-hold on
-plot(time,xOpt_2(7,:))
-% plot(simTime(1:end-349)-simTime(1),posZ(350:end))
-% plot(simTime(1:end-453)-simTime(1),posX(454:end))
-% plot(simTime(1:end-397)-simTime(1),posZ(398:end))
-title('Z position')
-ylabel('position(m)')
-xlim([0 5])
-xlabel('time(s)')
-grid on
-
-% Velocity
-figure('Name','Velocity')
-subplot(3,1,1)
-plot(time,xOpt(2,:))
-hold on
-plot(time,xOpt_2(2,:))
-% plot(simTime(1:end-349)-simTime(1),velX(350:end))
-% plot(simTime(1:end-453)-simTime(1),velX(454:end))
-% plot(simTime(1:end-397)-simTime(1),velX(398:end))
-title('X Velocity')
-legend('MPC','LQR','PD Controller')
-xlim([0 5])
-ylabel('velocity(m/s)')
-grid on
-subplot(3,1,2)
-plot(time,xOpt(5,:))
-hold on
-plot(time,xOpt_2(5,:))
-% plot(simTime(1:end-349)-simTime(1),velY(350:end))
-% plot(simTime(1:end-453)-simTime(1),velY(454:end))
-% plot(simTime(1:end-397)-simTime(1),velY(398:end))
-title('Y Velocity')
-xlim([0 5])
-ylabel('velocity(m/s)')
-grid on
-subplot(3,1,3)
-plot(time,xOpt(8,:))
-hold on
-plot(time,xOpt_2(8,:))
-% plot(simTime(1:end-349)-simTime(1),velZ(350:end))
-% plot(simTime(1:end-453)-simTime(1),velZ(454:end))
-% plot(simTime(1:end-397)-simTime(1),velZ(398:end))
-title('Z Velocity')
-xlim([0 5])
-ylabel('velocity(m/s)')
-xlabel('time(s)')
-grid on
-
-% Orientation
-figure('Name','Orientation')
-subplot(3,1,1)
-plot(time,xOpt(3,:))
-hold on
-plot(time,xOpt_2(3,:))
-% plot(simTime(1:end-349)-simTime(1),pitch(350:end))
-% plot(simTime(1:end-453)-simTime(1),pitch(454:end))
-% plot(simTime(1:end-397)-simTime(1),pitch(398:end))
-title('Pitch')
-legend('MPC','LQR','PD Controller')
-xlim([0 5])
-ylabel('pitch(rad)')
-grid on
-subplot(3,1,2)
-plot(time,xOpt(6,:))
-hold on
-plot(time,xOpt_2(6,:))
-% plot(simTime(1:end-349)-simTime(1),roll(350:end))
-% plot(simTime(1:end-453)-simTime(1),roll(454:end))
-% plot(simTime(1:end-397)-simTime(1),roll(398:end))
-title('Roll')
-xlim([0 5])
-ylabel('roll(rad)')
-grid on
-subplot(3,1,3)
-plot(time,xOpt(9,:))
-hold on
-plot(time,xOpt_2(9,:))
-% plot(simTime(1:end-349)-simTime(1),yaw(350:end))
-% plot(simTime(1:end-453)-simTime(1),yaw(454:end))
-% plot(simTime(1:end-397)-simTime(1),yaw(398:end))
-title('Yaw')
-ylabel('Yaw(rad')
-xlim([0 5])
-xlabel('time(s)')
-grid on
-
-figure('Name','Thrust')
-plot(time(1:end-1),uOpt(1,:))
-hold on
-plot(time(1:end-1),uOpt_2(1,:))
-legend('MPC','LQR')
-grid on
-
-figure('Name','Rates')
-subplot(2,1,1)
-plot(time(1:end-1),uOpt(2,:))
-hold on
-plot(time(1:end-1),uOpt(3,:))
-plot(time(1:end-1),uOpt(4,:))
-title('MPC')
-ylabel('rad/s')
-legend('roll rate','pitch rate','yaw rate')
-grid on
-subplot(2,1,2)
-plot(time(1:end-1),uOpt_2(2,:))
-hold on
-plot(time(1:end-1),uOpt_2(3,:))
-plot(time(1:end-1),uOpt_2(4,:))
-title('LQR')
-ylabel('rad/s')
-legend('roll rate','pitch rate','yaw rate')
-grid on
+% figure('Name','Trajectory')
+% for t = 1:M
+%     fprintf('Solving simstep: %i\n',t)
+%     
+%     [x, u, feas(t)] = solver(A,B,P,Q,R,N,xOpt(:,t),xL,xU,uL,uU,bf,Af,Xd,uRef,G,xk_1,uk_1);
+%     
+%     if ~feas(t)
+%         fprintf('MPC problem infeasible--exiting simulation')
+%         xOpt = [];
+%         uOpt = [];
+%         return;
+%     end 
+%     
+%     % Save open loop predictions
+%     xPred(:,:,t) = x;
+%     
+%     % Save first optimal input of sequence
+%     uOpt(:,t) = u(:,1);
+%     % Compute next step of closed-loop trajectory
+%     if ~wind_disturbance && ~model_mismatch
+%         xOpt(:,t+1) = x(:,2);
+%     elseif wind_disturbance && ~model_mismatch
+%         xOpt(:,t+1) = A*xOpt(:,t) + B*uOpt(:,t) + G*f_wind(xOpt(7,t));
+%     elseif model_mismatch && ~wind_disturbance
+%         xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t);
+%     else
+%         xOpt(:,t+1) = A_tilda*xOpt(:,t) + B_tilda*uOpt(:,t) + G*f_wind(xOpt(7,t));
+%     end
+%     
+%     if ~dist_reject
+%         xk_1 = [];
+%     else
+%         xk_1 = xOpt(:,t);
+%         uk_1 = uOpt(:,t);
+%     end
+%     
+%     % Plot Open Loop
+%     plot3(x(1,:),x(4,:),x(7,:),'r--')
+%     xlim([-5 5])
+%     ylim([-5 5])
+%     zlim([0 5])
+%     grid on
+%     hold on
+%     pause(0.1)
+% end
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% Plot Closed Loop
+% 
+% time = 0:0.1:M*0.1;
+% % load('Pose1.mat')
+% % load('Motors1.mat')
+% % load('Pose2.mat')
+% % load('Motors2.mat')
+% % load('Pose3.mat')
+% % load('Motors3.mat')
+% 
+% % Closed Loop Trajectory
+% plot3(xOpt(1,:),xOpt(4,:),xOpt(7,:),'bo-')
+% xlabel('X')
+% ylabel('Y')
+% zlabel('Z')
+% axis equal;
+% 
+% % Trajectory
+% figure('Name','Trajectory')
+% plot3(xOpt(1,:),xOpt(4,:),xOpt(7,:),'bo-')
+% hold on
+% % plot3(posX(350:end),posY(350:end),posZ(350:end),'ko-')
+% % plot3(posX(454:end),posY(454:end),posZ(454:end),'ko-')
+% % plot3(posX(398:end),posY(398:end),posZ(398:end),'ko-')
+% plot3(xOpt_2(1,:),xOpt_2(4,:),xOpt_2(7,:),'go-')
+% legend('MPC','LQR')
+% xlabel('X')
+% ylabel('Y')
+% zlabel('Z')
+% axis equal;
+% 
+% % Position
+% figure('Name','Position')
+% subplot(3,1,1)
+% plot(time,xOpt(1,:))
+% hold on
+% plot(time,xOpt_2(1,:))
+% % plot(simTime(1:end-349)-simTime(1),posX(350:end))
+% % plot(simTime(1:end-453)-simTime(1),posX(454:end))
+% % plot(simTime(1:end-397)-simTime(1),posX(398:end))
+% title('X position')
+% ylabel('position(m)')
+% legend('MPC','LQR','PD Controller')
+% xlim([0 5])
+% grid on
+% subplot(3,1,2)
+% plot(time,xOpt(4,:))
+% hold on
+% plot(time,xOpt_2(4,:))
+% % plot(simTime(1:end-349)-simTime(1),posY(350:end))
+% % plot(simTime(1:end-453)-simTime(1),posY(454:end))
+% % plot(simTime(1:end-397)-simTime(1),posY(398:end))
+% title('Y position')
+% ylabel('position(m)')
+% xlim([0 5])
+% grid on
+% subplot(3,1,3)
+% plot(time,xOpt(7,:))
+% hold on
+% plot(time,xOpt_2(7,:))
+% % plot(simTime(1:end-349)-simTime(1),posZ(350:end))
+% % plot(simTime(1:end-453)-simTime(1),posX(454:end))
+% % plot(simTime(1:end-397)-simTime(1),posZ(398:end))
+% title('Z position')
+% ylabel('position(m)')
+% xlim([0 5])
+% xlabel('time(s)')
+% grid on
+% 
+% % Velocity
+% figure('Name','Velocity')
+% subplot(3,1,1)
+% plot(time,xOpt(2,:))
+% hold on
+% plot(time,xOpt_2(2,:))
+% % plot(simTime(1:end-349)-simTime(1),velX(350:end))
+% % plot(simTime(1:end-453)-simTime(1),velX(454:end))
+% % plot(simTime(1:end-397)-simTime(1),velX(398:end))
+% title('X Velocity')
+% legend('MPC','LQR','PD Controller')
+% xlim([0 5])
+% ylabel('velocity(m/s)')
+% grid on
+% subplot(3,1,2)
+% plot(time,xOpt(5,:))
+% hold on
+% plot(time,xOpt_2(5,:))
+% % plot(simTime(1:end-349)-simTime(1),velY(350:end))
+% % plot(simTime(1:end-453)-simTime(1),velY(454:end))
+% % plot(simTime(1:end-397)-simTime(1),velY(398:end))
+% title('Y Velocity')
+% xlim([0 5])
+% ylabel('velocity(m/s)')
+% grid on
+% subplot(3,1,3)
+% plot(time,xOpt(8,:))
+% hold on
+% plot(time,xOpt_2(8,:))
+% % plot(simTime(1:end-349)-simTime(1),velZ(350:end))
+% % plot(simTime(1:end-453)-simTime(1),velZ(454:end))
+% % plot(simTime(1:end-397)-simTime(1),velZ(398:end))
+% title('Z Velocity')
+% xlim([0 5])
+% ylabel('velocity(m/s)')
+% xlabel('time(s)')
+% grid on
+% 
+% % Orientation
+% figure('Name','Orientation')
+% subplot(3,1,1)
+% plot(time,xOpt(3,:))
+% hold on
+% plot(time,xOpt_2(3,:))
+% % plot(simTime(1:end-349)-simTime(1),pitch(350:end))
+% % plot(simTime(1:end-453)-simTime(1),pitch(454:end))
+% % plot(simTime(1:end-397)-simTime(1),pitch(398:end))
+% title('Pitch')
+% legend('MPC','LQR','PD Controller')
+% xlim([0 5])
+% ylabel('pitch(rad)')
+% grid on
+% subplot(3,1,2)
+% plot(time,xOpt(6,:))
+% hold on
+% plot(time,xOpt_2(6,:))
+% % plot(simTime(1:end-349)-simTime(1),roll(350:end))
+% % plot(simTime(1:end-453)-simTime(1),roll(454:end))
+% % plot(simTime(1:end-397)-simTime(1),roll(398:end))
+% title('Roll')
+% xlim([0 5])
+% ylabel('roll(rad)')
+% grid on
+% subplot(3,1,3)
+% plot(time,xOpt(9,:))
+% hold on
+% plot(time,xOpt_2(9,:))
+% % plot(simTime(1:end-349)-simTime(1),yaw(350:end))
+% % plot(simTime(1:end-453)-simTime(1),yaw(454:end))
+% % plot(simTime(1:end-397)-simTime(1),yaw(398:end))
+% title('Yaw')
+% ylabel('Yaw(rad')
+% xlim([0 5])
+% xlabel('time(s)')
+% grid on
+% 
+% figure('Name','Thrust')
+% plot(time(1:end-1),uOpt(1,:))
+% hold on
+% plot(time(1:end-1),uOpt_2(1,:))
+% legend('MPC','LQR')
+% grid on
+% 
+% figure('Name','Rates')
+% subplot(2,1,1)
+% plot(time(1:end-1),uOpt(2,:))
+% hold on
+% plot(time(1:end-1),uOpt(3,:))
+% plot(time(1:end-1),uOpt(4,:))
+% title('MPC')
+% ylabel('rad/s')
+% legend('roll rate','pitch rate','yaw rate')
+% grid on
+% subplot(2,1,2)
+% plot(time(1:end-1),uOpt_2(2,:))
+% hold on
+% plot(time(1:end-1),uOpt_2(3,:))
+% plot(time(1:end-1),uOpt_2(4,:))
+% title('LQR')
+% ylabel('rad/s')
+% legend('roll rate','pitch rate','yaw rate')
+% grid on
 
 % Motor Forces
 % motor0 = smooth(motor0);
