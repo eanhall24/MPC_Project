@@ -13,6 +13,7 @@ mass = 0.688;
 l = 0.12;
 k = 0.014;
 J = (10^-4)*[36 36 74];
+dt = 0.1;
 g = 9.81;
 
 %% State Space
@@ -66,7 +67,7 @@ C = eye(9);
 
 D = 0;
 
-E = [0;0;0;0;0;0;0;-0.1*g;0];
+E = [0;0;0;0;0;0;0;-dt*g;0];
 
 G = zeros(9,1);
 G(6) = 1;
@@ -77,7 +78,7 @@ f_wind = @(z) 0.08*z;
 %% System
 system = ss(A,B,[],[]);
 % Discretization 
-dsys = c2d(system,0.02,'zoh');
+dsys = c2d(system,dt,'zoh');
 A = dsys.A;
 B = dsys.B;
 C = dsys.C;

@@ -24,14 +24,14 @@ uU = [20;100;100;100;g];
 xL = [-4;-1;-pi/6;-4;-1;-pi/6;0;-1;-pi];
 xU = [4;1;pi/6;4;1;pi/6;4;1;pi];
 
-X = Polyhedron('lb',xL,'ub',xU);
-U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
+% X = Polyhedron('lb',xL,'ub',xU);
+% U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
 
 %% Objective Function
 % stage cost x'Qx+u'Ru
-Q = 0.1*diag([20 20 16 58 58 3.9 0.1 0.1 0.1]);
+Q = dt*diag([20 20 16 58 58 3.9 0.1 0.1 0.1]);
 % R = 1*eye(nu);
-R = 0.1*eye(nu);
+R = dt*eye(nu);
 % Q = diag(ones(12,1));
 % R = eye(nu);
 
@@ -49,20 +49,20 @@ R = 0.1*eye(nu);
 % closed loop system
 Acl=A-B(:,1:nu)*K;
 % remeber to convet input constraits in state constraints
-Xtilde=X.intersect(Polyhedron('H',[-U.H(:,1:nu)*K U.H(:,nu+1)])); 
-Oinf=N_pos_inv(Acl,Xtilde);
+% Xtilde=X.intersect(Polyhedron('H',[-U.H(:,1:nu)*K U.H(:,nu+1)])); 
+% Oinf=N_pos_inv(Acl,Xtilde);
 % figure(50);
 % plot(Oinf); title('Xf');
 
-Af = Oinf.H(:,1:n);
-bf = Oinf.H(:,n+1);
+% Af = Oinf.H(:,1:n);
+% bf = Oinf.H(:,n+1);
 
 % Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 % Xd = [-1;0;0;0;3.5;0;0;0;4;0;0;0];
-Xd = [4;0;0;0;0;0;0;0;0];
+Xd = [0.5;0;0;0;0;0;0;0;0];
 
 %% Simulation Setup
-M = 100;
+M = 50;
 x0 = zeros(9,1);
 xOpt = zeros(n,M+1);
 xOpt(:,1) = x0;
