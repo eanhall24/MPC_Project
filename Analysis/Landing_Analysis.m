@@ -6,12 +6,21 @@
 load('Landing_MPC_posx.mat')
 load('Landing_MPC_posz.mat')
 load('Landing_MPC_time.mat')
+load('Landing_MPC_pitch.mat')
+load('Landing_MPC_velz.mat')
+load('Landing_MPC_esttime.mat')
 MPCposx = posx;
 MPCposz = posz;
 MPCtime = time;
+MPCpitch = pitch;
+MPCvelz = velz;
+MPCesttime = esttime;
 load('Landing_Rates_posx.mat')
 load('Landing_Rates_posz.mat')
-load('Landing_Rates_posz.mat')
+load('Landing_Rates_time.mat')
+load('Landing_Rates_pitch.mat')
+load('Landing_Rates_velz.mat')
+load('Landing_Rates_esttime.mat')
 
 figure('Name', 'Landing Analysis')
 % subplot(2,1,1)
@@ -21,6 +30,36 @@ plot(posx, posz,'b--')
 legend('MPC','PD')
 xlabel('X Position (m)')
 ylabel('Z Position (m)')
+title('Position')
+
+MPCtime = MPCtime - MPCtime(1635);
+time = time - time(1184);
+MPCesttime = MPCesttime - MPCesttime(33);
+esttime = esttime - esttime(36);
+
+maxMPC = (360/(2*pi))*max(MPCpitch);
+maxR = (360/(2*pi))*max(pitch);
+disp(maxMPC)
+disp(maxR)
+
+figure('Name', 'Orientation Analysis')
+% subplot(2,1,1)
+plot(MPCtime(1635:end), (360/(2*pi))*MPCpitch(1635:end),'r')
+hold on
+plot(time(1184:end), (360/(2*pi))*pitch(1184:end),'r--')
+legend('MPC','PD')
+xlabel('time (s)')
+ylabel('Pitch Angle (degrees)')
+title('Orientation')
+
+figure('Name', 'Velocity Analysis')
+% subplot(2,1,1)
+plot(MPCesttime(33:end), MPCvelz(33:end),'r')
+hold on
+plot(esttime(36:end), velz(36:end),'r--')
+legend('MPC','PD')
+xlabel('time (s)')
+ylabel('Pitch Angle (degrees)')
 title('Landing')
 
 % subplot(2,1,2)

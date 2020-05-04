@@ -38,7 +38,21 @@ ylim([0 1.2])
 % ylim([0.8 1.2])
 ylabel('X Position (m)')
 legend('MPC posx','PD posx','MPC braking point','PD braking point')
-title('Braking')
+title('Position')
+
+figure('Name', 'Horizontal Orientation Analysis')
+% subplot(2,1,1)
+plot(MPCtime(945:end), MPCposx(945:end),'b')
+hold on
+plot(time(920:end), posx(920:end),'b--')
+yline(refMPC,'k');
+yline(refRates,'k--');
+xlim([0 15])
+ylim([0 1.2])
+% ylim([0.8 1.2])
+ylabel('X Position (m)')
+legend('MPC posx','PD posx','MPC braking point','PD braking point')
+title('Position')
 
 % subplot(2,1,2)
 % plot(time(920:end), posx(920:end))
