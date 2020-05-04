@@ -21,8 +21,8 @@ nu = 4;
 % uL = [0.025*mass*g;0.025*mass*g;0.025*mass*g;0.025*mass*g;g];
 uL = [2;-100;-100;-100;g];
 uU = [20;100;100;100;g];
-xL = [-4;-1;-pi/6;-4;-1;-pi/6;0;-1;-pi];
-xU = [4;1;pi/6;4;1;pi/6;4;1;pi];
+xL = [-4;-4;-4;-pi;-pi;-pi;-10;-10;-10];
+xU = [4;4;4;pi;pi;pi;10;10;10];
 
 % X = Polyhedron('lb',xL,'ub',xU);
 % U = Polyhedron('lb',uL(1:nu),'ub',uU(1:nu));
@@ -59,7 +59,7 @@ Acl=A-B(:,1:nu)*K;
 
 % Xd = [2;0;0;0;2;0;0;0;2;0;0;0];
 % Xd = [-1;0;0;0;3.5;0;0;0;4;0;0;0];
-Xd = [0.5;0;0;0;0;0;0;0;0];
+Xd = [4;0;0;0;0;0;0;0;0];
 
 %% Simulation Setup
 M = 50;
@@ -146,7 +146,7 @@ end
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %% Plot Closed Loop
 % 
-% time = 0:0.1:M*0.1;
+time = 0:0.1:M*0.1;
 % % load('Pose1.mat')
 % % load('Motors1.mat')
 % % load('Pose2.mat')
@@ -176,42 +176,42 @@ end
 % axis equal;
 % 
 % % Position
-% figure('Name','Position')
-% subplot(3,1,1)
+figure('Name','Position')
+subplot(3,1,1)
 % plot(time,xOpt(1,:))
 % hold on
-% plot(time,xOpt_2(1,:))
-% % plot(simTime(1:end-349)-simTime(1),posX(350:end))
-% % plot(simTime(1:end-453)-simTime(1),posX(454:end))
-% % plot(simTime(1:end-397)-simTime(1),posX(398:end))
-% title('X position')
-% ylabel('position(m)')
-% legend('MPC','LQR','PD Controller')
-% xlim([0 5])
-% grid on
-% subplot(3,1,2)
+plot(time,xOpt_2(1,:))
+% plot(simTime(1:end-349)-simTime(1),posX(350:end))
+% plot(simTime(1:end-453)-simTime(1),posX(454:end))
+% plot(simTime(1:end-397)-simTime(1),posX(398:end))
+title('X position')
+ylabel('position(m)')
+legend('MPC','LQR','PD Controller')
+xlim([0 5])
+grid on
+subplot(3,1,2)
 % plot(time,xOpt(4,:))
 % hold on
-% plot(time,xOpt_2(4,:))
-% % plot(simTime(1:end-349)-simTime(1),posY(350:end))
-% % plot(simTime(1:end-453)-simTime(1),posY(454:end))
-% % plot(simTime(1:end-397)-simTime(1),posY(398:end))
-% title('Y position')
-% ylabel('position(m)')
-% xlim([0 5])
-% grid on
-% subplot(3,1,3)
+plot(time,xOpt_2(2,:))
+% plot(simTime(1:end-349)-simTime(1),posY(350:end))
+% plot(simTime(1:end-453)-simTime(1),posY(454:end))
+% plot(simTime(1:end-397)-simTime(1),posY(398:end))
+title('Y position')
+ylabel('position(m)')
+xlim([0 5])
+grid on
+subplot(3,1,3)
 % plot(time,xOpt(7,:))
 % hold on
-% plot(time,xOpt_2(7,:))
-% % plot(simTime(1:end-349)-simTime(1),posZ(350:end))
-% % plot(simTime(1:end-453)-simTime(1),posX(454:end))
-% % plot(simTime(1:end-397)-simTime(1),posZ(398:end))
-% title('Z position')
-% ylabel('position(m)')
-% xlim([0 5])
-% xlabel('time(s)')
-% grid on
+plot(time,xOpt_2(3,:))
+% plot(simTime(1:end-349)-simTime(1),posZ(350:end))
+% plot(simTime(1:end-453)-simTime(1),posX(454:end))
+% plot(simTime(1:end-397)-simTime(1),posZ(398:end))
+title('Z position')
+ylabel('position(m)')
+xlim([0 5])
+xlabel('time(s)')
+grid on
 % 
 % % Velocity
 % figure('Name','Velocity')
@@ -252,51 +252,51 @@ end
 % grid on
 % 
 % % Orientation
-% figure('Name','Orientation')
-% subplot(3,1,1)
+figure('Name','Orientation')
+subplot(3,1,1)
 % plot(time,xOpt(3,:))
 % hold on
-% plot(time,xOpt_2(3,:))
-% % plot(simTime(1:end-349)-simTime(1),pitch(350:end))
-% % plot(simTime(1:end-453)-simTime(1),pitch(454:end))
-% % plot(simTime(1:end-397)-simTime(1),pitch(398:end))
-% title('Pitch')
+plot(time,xOpt_2(5,:))
+% plot(simTime(1:end-349)-simTime(1),pitch(350:end))
+% plot(simTime(1:end-453)-simTime(1),pitch(454:end))
+% plot(simTime(1:end-397)-simTime(1),pitch(398:end))
+title('Pitch')
 % legend('MPC','LQR','PD Controller')
-% xlim([0 5])
-% ylabel('pitch(rad)')
-% grid on
-% subplot(3,1,2)
+xlim([0 5])
+ylabel('pitch(rad)')
+grid on
+subplot(3,1,2)
 % plot(time,xOpt(6,:))
 % hold on
-% plot(time,xOpt_2(6,:))
-% % plot(simTime(1:end-349)-simTime(1),roll(350:end))
-% % plot(simTime(1:end-453)-simTime(1),roll(454:end))
-% % plot(simTime(1:end-397)-simTime(1),roll(398:end))
-% title('Roll')
-% xlim([0 5])
-% ylabel('roll(rad)')
-% grid on
-% subplot(3,1,3)
+plot(time,xOpt_2(4,:))
+% plot(simTime(1:end-349)-simTime(1),roll(350:end))
+% plot(simTime(1:end-453)-simTime(1),roll(454:end))
+% plot(simTime(1:end-397)-simTime(1),roll(398:end))
+title('Roll')
+xlim([0 5])
+ylabel('roll(rad)')
+grid on
+subplot(3,1,3)
 % plot(time,xOpt(9,:))
 % hold on
-% plot(time,xOpt_2(9,:))
-% % plot(simTime(1:end-349)-simTime(1),yaw(350:end))
-% % plot(simTime(1:end-453)-simTime(1),yaw(454:end))
-% % plot(simTime(1:end-397)-simTime(1),yaw(398:end))
-% title('Yaw')
-% ylabel('Yaw(rad')
-% xlim([0 5])
-% xlabel('time(s)')
-% grid on
+plot(time,xOpt_2(6,:))
+% plot(simTime(1:end-349)-simTime(1),yaw(350:end))
+% plot(simTime(1:end-453)-simTime(1),yaw(454:end))
+% plot(simTime(1:end-397)-simTime(1),yaw(398:end))
+title('Yaw')
+ylabel('Yaw(rad')
+xlim([0 5])
+xlabel('time(s)')
+grid on
 % 
-% figure('Name','Thrust')
+figure('Name','Thrust')
 % plot(time(1:end-1),uOpt(1,:))
 % hold on
-% plot(time(1:end-1),uOpt_2(1,:))
+plot(time(1:end-1),uOpt_2(1,:))
 % legend('MPC','LQR')
-% grid on
+grid on
 % 
-% figure('Name','Rates')
+figure('Name','Rates')
 % subplot(2,1,1)
 % plot(time(1:end-1),uOpt(2,:))
 % hold on
@@ -307,14 +307,14 @@ end
 % legend('roll rate','pitch rate','yaw rate')
 % grid on
 % subplot(2,1,2)
-% plot(time(1:end-1),uOpt_2(2,:))
-% hold on
-% plot(time(1:end-1),uOpt_2(3,:))
-% plot(time(1:end-1),uOpt_2(4,:))
-% title('LQR')
-% ylabel('rad/s')
-% legend('roll rate','pitch rate','yaw rate')
-% grid on
+plot(time(1:end-1),uOpt_2(2,:))
+hold on
+plot(time(1:end-1),uOpt_2(3,:))
+plot(time(1:end-1),uOpt_2(4,:))
+title('LQR')
+ylabel('rad/s')
+legend('roll rate','pitch rate','yaw rate')
+grid on
 
 % Motor Forces
 % motor0 = smooth(motor0);
