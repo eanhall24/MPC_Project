@@ -10,23 +10,41 @@ load('Forward_UMPC_posy.mat')
 load('Forward_UMPC_posz.mat')
 load('Forward_UMPC_time.mat')
 load('Forward_UMPC_pitch.mat')
+load('Forward_UMPC_roll.mat')
+load('Forward_UMPC_velx.mat')
+load('Forward_UMPC_vely.mat')
+load('Forward_UMPC_velz.mat')
+load('Forward_UMPC_yaw.mat')
 load('Forward_UMPC_pitchrate.mat')
 load('Forward_UMPC_radtime.mat')
+load('Forward_UMPC_esttime.mat')
 Uposx = posx;
 Uposy = posy;
 Uposz = posz;
 Utime = time;
 Upitch = pitch;
+Uroll = roll;
+Uyaw = yaw;
+Uvelx = velx;
+Uvely = vely;
+Uvelz = velz;
 Upitchrate = pitchrate;
 Uradtime = radtime;
+Uesttime = esttime;
 
 load('Forward_MPC_posx.mat')
 load('Forward_MPC_posy.mat')
 load('Forward_MPC_posz.mat')
 load('Forward_MPC_time.mat')
 load('Forward_MPC_pitch.mat')
+load('Forward_MPC_roll.mat')
+load('Forward_MPC_velx.mat')
+load('Forward_MPC_vely.mat')
+load('Forward_MPC_velz.mat')
+load('Forward_MPC_yaw.mat')
 load('Forward_MPC_pitchrate.mat')
 load('Forward_MPC_radtime.mat')
+load('Forward_MPC_esttime.mat')
 
 UTindex = 1;
 
@@ -78,9 +96,9 @@ end
 settlingTime = Utime(ss_index);
 forward_umpc_settlingTime = settlingTime;
 
-[M,I] = max(Upitchrate);
+[M,I] = max(Upitch);
 disp('The max rate for unconstrained 2s horizon mpc is:')
-disp(M)
+disp((360/(2*pi))*M)
 
 Tindex = 1;
 
@@ -132,95 +150,142 @@ end
 settlingTime = time(ss_index1);
 forward_mpc_settlingTime = settlingTime;
 
-[M,I] = max(pitchrate);
+[M,I] = max(pitch);
 disp('The max rate for constrained is:')
-disp(M)
+disp((360/(2*pi))*M)
 
 figure('Name','Position')
-subplot(2,1,1)
+% subplot(2,1,1)
 plot(Utime(UTindex1:end),Uposx(UTindex1:end),'b')
 hold on
-plot(Utime(UTindex1:end),Uposy(UTindex1:end),'g')
+plot(time(Tindex1:end),posx(Tindex1:end),'b--')
+% plot(Utime(UTindex1:end),Uposy(UTindex1:end),'g')
 plot(Utime(UTindex1:end),Uposz(UTindex1:end),'r')
+plot(time(Tindex1:end),posz(Tindex1:end),'r--')
 xline(forward_umpc_settlingTime,'k');
+xline(forward_mpc_settlingTime,'k--');
 yline(lower(1),'--k');
 yline(upper(1),'--k');
 xlim([0 4])
 ylim([0 4.5])
 ylabel('Position(m)')
-legend('posx','posy','posz','settling time')
-title('Unconstrained MPC: Target [4,0,1]')
+legend('UMPC posx','MPC posx','UMPC posz','UMPC posz','UMPC settling time',...
+    'MPC settling time','location','best')
+title('Reference at [4,0,1]')
 
-subplot(2,1,2)
-plot(time(Tindex1:end),posx(Tindex1:end),'b')
-hold on
-plot(time(Tindex1:end),posy(Tindex1:end),'g')
-plot(time(Tindex1:end),posz(Tindex1:end),'r')
-xline(forward_mpc_settlingTime,'k');
-yline(lower(1),'--k');
-yline(upper(1),'--k');
-xlim([0 4])
-ylim([0 4.5])
-xlabel('Time(s)')
-ylabel('Position(m)')
-legend('posx','posy','posz','settling time')
-title('Constrained MPC: Target [4,0,1]')
+% subplot(2,1,2)
+% plot(time(Tindex1:end),posx(Tindex1:end),'b')
+% hold on
+% plot(time(Tindex1:end),posy(Tindex1:end),'g')
+% plot(time(Tindex1:end),posz(Tindex1:end),'r')
+% xline(forward_mpc_settlingTime,'k');
+% yline(lower(1),'--k');
+% yline(upper(1),'--k');
+% xlim([0 4])
+% ylim([0 4.5])
+% xlabel('Time(s)')
+% ylabel('Position(m)')
+% legend('posx','posy','posz','settling time')
+% title('Constrained MPC: Target [4,0,1]')
 
 figure('Name','Orientation')
-subplot(2,1,1)
-plot(Utime(UTindex1:end),Upitch(UTindex1:end),'k')
+% subplot(2,1,1)
+plot(Utime(UTindex1:end),(360/(2*pi))*Upitch(UTindex1:end),'r')
+hold on
+plot(time(Tindex1:end),(360/(2*pi))*pitch(Tindex1:end),'r--')
 xlim([0 4])
-ylim([-0.8 2])
+ylim([-45 100])
+yticks(-60:20:100)
 xlabel('Time(s)')
-ylabel('Angle (rad)')
-title('Unconstrained MPC: Target [4,0,1]')
+ylabel('Angle (degree)')
+legend('UMPC pitch', 'MPC pitch')
+title('Reference at [4,0,1]')
 
-subplot(2,1,2)
-plot(time(Tindex1:end),pitch(Tindex1:end),'k')
-xlim([0 4])
-ylim([-0.8 2])
-xlabel('Time(s)')
-ylabel('Angle (rad)')
-title('Constrained MPC: Target [4,0,1]')
+% subplot(2,1,2)
+% plot(time(Tindex1:end),(360/(2*pi))*pitch(Tindex1:end),'k')
+% xlim([0 4])
+% ylim([-45 100])
+% yticks(-60:20:100)
+% xlabel('Time(s)')
+% ylabel('Angle (degree)')
+% title('Constrained MPC: Target [4,0,1]')
 
 figure('Name','Rates')
-subplot(2,1,1)
-plot(Uradtime(URindex1:end),Upitchrate(URindex1:end),'k')
+% subplot(2,1,1)
+plot(Uradtime(URindex1:end),Upitchrate(URindex1:end),'b')
+hold on
+plot(radtime(Rindex1:end),pitchrate(Rindex1:end),'b--')
 xlim([0 4])
 ylim([-8 12])
 xlabel('Time(s)')
 ylabel('Rate (rad/s)')
-title('Unconstrained MPC: Target [4,0,1]')
+legend('UMPC pitch', 'MPC pitch')
+title('Reference at [4,0,1]')
 
-subplot(2,1,2)
-plot(radtime(Rindex1:end),pitchrate(Rindex1:end),'k')
-xlim([0 4])
-ylim([-8 12])
-xlabel('Time(s)')
-ylabel('rate (rad/s)')
-title('Constrained MPC: Target [4,0,1]')
+% subplot(2,1,2)
+% plot(radtime(Rindex1:end),pitchrate(Rindex1:end),'k')
+% xlim([0 4])
+% ylim([-8 12])
+% xlabel('Time(s)')
+% ylabel('rate (rad/s)')
+% title('Constrained MPC: Target [4,0,1]')
 
-ref1 = [0;0;1;0;0;0;0;0;0];
-ref2 = [4;0;1;0;0;0;0;0;0];
-Q = diag([20 20 16 58 58 3.9 0.1 0.1 0.1]);
+ref1 = [0;0;1;0;0;0];
+ref2 = [0;0;0];
+ref3 = [4;0;1;0;0;0];
+Q1 = 0.1*diag([20 20 16 58 58 3.9]);
+Q2 = 0.1*diag([0.1 0.1 0.1]);
 Ucost = 0;
+Upose = [Uposx;Uposy;Uposz;Uroll;Upitch;Uyaw];
+Uvel = [Uvelx;Uvely;Uvelz];
 Ccost = 0;
+pose = [posx;posy;posz;roll;pitch;yaw];
+vel = [velx;vely;velz];
 
 %% Unconstrained Cost
-for i = UTindex:UTindex1-2
-    Ucost = Ucost + ([
+for i = UTindex:UTindex1-1
+    Ucost = Ucost + (ref1-Upose(i))'*Q1*(ref1-Upose(i));
 end
 
-for i = UTindex:ss_index-1
-    
+for i = UTindex1:ss_index
+    Ucost = Ucost + (ref3-Upose(i))'*Q1*(ref3-Upose(i));
 end
+
+for i = URindex:URindex1-1
+     Ucost = Ucost + (ref2-Uvel(i))'*Q2*(ref2-Uvel(i));
+end
+
+for i = URindex1:length(Uvelx)
+     Ucost = Ucost + (ref2-Uvel(i))'*Q2*(ref2-Uvel(i));
+     if Uesttime(i) > forward_umpc_settlingTime
+         break;
+     end
+end
+
+
 
 %% Constrained Cost
 for i = Tindex:Tindex1-1
-    
+    Ccost = Ccost + (ref1-pose(i))'*Q1*(ref1-pose(i));
 end
 
+for i = Tindex1:ss_index
+    Ccost = Ccost + (ref3-pose(i))'*Q1*(ref3-pose(i));
+end
 
+for i = Rindex:Rindex1-1
+     Ccost = Ccost + (ref2-vel(i))'*Q2*(ref2-vel(i));
+end
+
+for i = Rindex1:length(velx)
+     Ccost = Ccost + (ref2-vel(i))'*Q2*(ref2-vel(i));
+     if esttime(i) > forward_mpc_settlingTime
+         break;
+     end
+end
+
+disp(Ucost)
+disp(Ccost)
 
 %% Unconstrained MPC 4s Forward @ [4,0,1]
 

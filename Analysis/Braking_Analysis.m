@@ -20,28 +20,36 @@ refRates = 0.566;
 
 penMPC = ((max(MPCposx) - refMPC)/refMPC)*100;
 penRates = ((max(posx) - refRates)/refRates)*100;
+disp(penMPC)
+disp(penRates)
+
+MPCtime = MPCtime - MPCtime(945);
+time = time - time(920);
 
 figure('Name', 'Horizontal Penetration Analysis')
-subplot(2,1,1)
-plot(MPCtime, MPCposx)
+% subplot(2,1,1)
+plot(MPCtime(945:end), MPCposx(945:end),'b')
 hold on
-yline(refMPC,'k--');
-ylim([0 1.2])
-% ylim([0.8 1.2])
-ylabel('X Position (m)')
-legend('posx','braking point')
-title('MPC Controller')
-
-subplot(2,1,2)
-plot(time, posx)
-hold on
+plot(time(920:end), posx(920:end),'b--')
+yline(refMPC,'k');
 yline(refRates,'k--');
+xlim([0 15])
 ylim([0 1.2])
 % ylim([0.8 1.2])
-xlabel('time (s)')
 ylabel('X Position (m)')
-legend('posx','braking point')
-title('Rates Controller')
+legend('MPC posx','PD posx','MPC braking point','PD braking point')
+title('Braking')
+
+% subplot(2,1,2)
+% plot(time(920:end), posx(920:end))
+% hold on
+% yline(refRates,'k--');
+% ylim([0 1.2])
+% % ylim([0.8 1.2])
+% xlabel('time (s)')
+% ylabel('X Position (m)')
+% legend('posx','braking point')
+% title('Rates Controller')
 
 %% Vertical Brakings
 

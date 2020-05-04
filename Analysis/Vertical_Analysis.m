@@ -97,36 +97,37 @@ disp('The max rates force is:')
 disp(ratesMax)
 
 figure('Name','Vertical Position')
-subplot(2,1,1)
-plot(MPCtime(MPCTindex:end),MPCposx(MPCTindex:end),'b')
+% subplot(2,1,1)
+plot(MPCtime(MPCTindex:end),MPCposz(MPCTindex:end),'b')
 hold on
-plot(MPCtime(MPCTindex:end),MPCposy(MPCTindex:end),'g')
-plot(MPCtime(MPCTindex:end),MPCposz(MPCTindex:end),'r')
+plot(MPCtime(MPCTindex:end),MPCposz(MPCTindex:end),'r--')
+% plot(MPCtime(MPCTindex:end),MPCposy(MPCTindex:end),'g')
+% plot(MPCtime(MPCTindex:end),MPCposz(MPCTindex:end),'r')
 xline(mpcsettlingTime,'k');
 yline(lower(3),'--k');
 yline(upper(3),'--k');
 ylim([0 1.1])
 xlabel('Time(s)')
-ylabel('Position(m)')
-legend('posx','posy','posz','settling time')
-title('MPC: Target [0,0,1]')
+ylabel('Z Position(m)')
+legend('MPC','UMPC','settling time')
+title('Reference at [0,0,1]')
 
-subplot(2,1,2)
-plot(time(Tindex:end),posx(Tindex:end),'b')
-hold on
-plot(time(Tindex:end),posy(Tindex:end),'g')
-plot(time(Tindex:end),posz(Tindex:end),'r')
-xline(rates_settlingTime,'k');
-yline(lower(3),'--k');
-yline(upper(3),'--k');
-ylim([0 1.1])
-xlabel('Time(s)')
-ylabel('Position(m)')
-legend('posx','posy','posz','settling time')
-title('Rates: Target [0,0,1]')
+% subplot(2,1,2)
+% plot(MPCtime(MPCTindex:end),MPCposx(MPCTindex:end),'b')
+% hold on
+% plot(MPCtime(MPCTindex:end),MPCposy(MPCTindex:end),'g')
+% plot(MPCtime(MPCTindex:end),MPCposz(MPCTindex:end),'r')
+% xline(mpcsettlingTime,'k');
+% yline(lower(3),'--k');
+% yline(upper(3),'--k');
+% ylim([0 1.1])
+% xlabel('Time(s)')
+% ylabel('Position(m)')
+% legend('posx','posy','posz','settling time')
+% title('Unconstrained MPC: Target [0,0,1]')
 
 figure('Name','Vertical Motor Forces')
-subplot(2,1,1)
+% subplot(2,1,1)
 plot(MPCteltime(MPCtelTindex:end),MPCmot1(MPCtelTindex:end))
 hold on
 plot(MPCteltime(MPCtelTindex:end),MPCmot2(MPCtelTindex:end))
@@ -135,19 +136,18 @@ plot(MPCteltime(MPCtelTindex:end),MPCmot4(MPCtelTindex:end))
 ylabel('Motor Force(N)')
 ylim([1.5 2.5])
 legend('motor 1','motor 2','motor 3','motor 4')
-title('MPC: Target [0,0,1]')
+title('Reference at [0,0,1]')
 
-subplot(2,1,2)
-plot(teltime(telTindex:end),mot1(telTindex:end))
-hold on
-plot(teltime(telTindex:end),mot2(telTindex:end))
-plot(teltime(telTindex:end),mot3(telTindex:end))
-plot(teltime(telTindex:end),mot4(telTindex:end))
-xlabel('Time(s)')
-ylabel('Motor Force(N)')
-ylim([1.5 2.5])
-legend('motor 1','motor 2','motor 3','motor 4')
-title('Rates: Target [0,0,1]')
+% subplot(2,1,2)
+% plot(MPCteltime(MPCtelTindex:end),MPCmot1(MPCtelTindex:end))
+% hold on
+% plot(MPCteltime(MPCtelTindex:end),MPCmot2(MPCtelTindex:end))
+% plot(MPCteltime(MPCtelTindex:end),MPCmot3(MPCtelTindex:end))
+% plot(MPCteltime(MPCtelTindex:end),MPCmot4(MPCtelTindex:end))
+% ylabel('Motor Force(N)')
+% ylim([1.5 2.5])
+% legend('motor 1','motor 2','motor 3','motor 4')
+% title('Unconstrained MPC: Target [0,0,1]')
 
 %% Vertical Position [0,0,10]
 
