@@ -6,16 +6,16 @@ close all
 clear
 clc
 
-load('timestep2/lin2_posx.mat')
-load('timestep2/lin2_posy.mat')
-load('timestep2/lin2_posz.mat')
-load('timestep2/lin2_pitch.mat')
-load('timestep2/lin2_mot1.mat')
-load('timestep2/lin2_mot2.mat')
-load('timestep2/lin2_mot3.mat')
-load('timestep2/lin2_mot4.mat')
-load('timestep2/lin2_time.mat')
-load('timestep2/lin2_teltime.mat')
+load('timestep1/lin1_posx.mat')
+load('timestep1/lin1_posy.mat')
+load('timestep1/lin1_posz.mat')
+load('timestep1/lin1_pitch.mat')
+load('timestep1/lin1_mot1.mat')
+load('timestep1/lin1_mot2.mat')
+load('timestep1/lin1_mot3.mat')
+load('timestep1/lin1_mot4.mat')
+load('timestep1/lin1_time.mat')
+load('timestep1/lin1_teltime.mat')
 
 posx1 = posx;
 posz1 = posz;
@@ -27,16 +27,16 @@ mot31 = mot3;
 mot41 = mot4;
 teltime1 = teltime;
 
-load('timestep2/nonlin2_posx.mat')
-load('timestep2/nonlin2_posy.mat')
-load('timestep2/nonlin2_posz.mat')
-load('timestep2/nonlin2_pitch.mat')
-load('timestep2/nonlin2_mot1.mat')
-load('timestep2/nonlin2_mot2.mat')
-load('timestep2/nonlin2_mot3.mat')
-load('timestep2/nonlin2_mot4.mat')
-load('timestep2/nonlin2_time.mat')
-load('timestep2/nonlin2_teltime.mat')
+load('timestep1/nonlin1_posx.mat')
+load('timestep1/nonlin1_posy.mat')
+load('timestep1/nonlin1_posz.mat')
+load('timestep1/nonlin1_pitch.mat')
+load('timestep1/nonlin1_mot1.mat')
+load('timestep1/nonlin1_mot2.mat')
+load('timestep1/nonlin1_mot3.mat')
+load('timestep1/nonlin1_mot4.mat')
+load('timestep1/nonlin1_time.mat')
+load('timestep1/nonlin1_teltime.mat')
 
 posx2 = posx;
 posz2 = posz;
@@ -48,16 +48,16 @@ mot32 = mot3;
 mot42 = mot4;
 teltime2 = teltime;
 
-load('timestep2/nonlin22_posx.mat')
-load('timestep2/nonlin22_posy.mat')
-load('timestep2/nonlin22_posz.mat')
-load('timestep2/nonlin22_pitch.mat')
-load('timestep2/nonlin22_mot1.mat')
-load('timestep2/nonlin22_mot2.mat')
-load('timestep2/nonlin22_mot3.mat')
-load('timestep2/nonlin22_mot4.mat')
-load('timestep2/nonlin22_time.mat')
-load('timestep2/nonlin22_teltime.mat')
+load('timestep1/Forward_UMPC1_posx.mat')
+load('timestep1/Forward_UMPC1_posy.mat')
+load('timestep1/Forward_UMPC1_posz.mat')
+load('timestep1/Forward_UMPC1_pitch.mat')
+load('timestep1/Forward_UMPC1_mot1.mat')
+load('timestep1/Forward_UMPC1_mot2.mat')
+load('timestep1/Forward_UMPC1_mot3.mat')
+load('timestep1/Forward_UMPC1_mot4.mat')
+load('timestep1/Forward_UMPC1_time.mat')
+load('timestep1/Forward_UMPC1_teltime.mat')
 
 %% Data analysis
 Tindex1 = 1;
@@ -114,7 +114,7 @@ end
 teltime = teltime - time(Tindex);
 time = time - time(Tindex);
 
-%% Non linear vs Linear Plots
+%% Plots
 
 desPos = [1;0;0];
 lower = desPos - 0.02*desPos;
@@ -152,7 +152,7 @@ hold on
 plot(teltime1(telindex1:end),mot21(telindex1:end))
 plot(teltime1(telindex1:end),mot31(telindex1:end))
 plot(teltime1(telindex1:end),mot41(telindex1:end))
-xlim([0 15])
+xlim([0 8])
 ylabel('Force (N)')
 legend('Motor 1', 'Motor 2','Motor 3', 'Motor 4')
 title('Linear Model Motor Forces')
@@ -163,61 +163,31 @@ hold on
 plot(teltime2(telindex2:end),mot22(telindex2:end))
 plot(teltime2(telindex2:end),mot32(telindex2:end))
 plot(teltime2(telindex2:end),mot42(telindex2:end))
-xlim([0 15])
-ylim([1 2.5])
+xlim([0 8])
+ylim([1.5 1.9])
 ylabel('Force (N)')
 legend('Motor 1', 'Motor 2','Motor 3', 'Motor 4')
 title('Nonlinear Model Motor Forces')
 
-%% Time Horizon Plots
-
-figure('Name','Horizon Pose Data')
+figure('Name','Pose Data')
 subplot(2,1,1)
 plot(time(Tindex:end),posx(Tindex:end),'b')
 hold on
-plot(time(Tindex:end),posz(Tindex:end),'b--')
-plot(time2(Tindex2:end),posx2(Tindex2:end),'r')
-plot(time2(Tindex2:end),posz2(Tindex2:end),'r--')
+plot(time(Tindex:end),posz(Tindex:end),'r')
 yline(1,'--k');
 xlim([0 15])
 ylim([0 1.5])
 ylabel('Position(m)')
-legend('0.2 sec horizon posx','0.2 sec horizon posz','0.7 sec horizon posx',...
-    '0.7 sec horizon posz','location','best')
-title('Position')
+legend('posx','posz','location','best')
+title('Unconstrained Nonlinear Position')
 
 subplot(2,1,2)
 plot(time(Tindex:end),(360/(2*pi))*pitch(Tindex:end),'b')
-hold on
-plot(time2(Tindex2:end),(360/(2*pi))*pitch2(Tindex2:end),'r')
 yline(0,'--k');
 xlim([0 15])
 % ylim([0 0.6])
 ylabel('Pitch Angle (deg)')
-legend('0.2 sec horizon pitch','0.7 sec horizon pitch','location','best')
-title('Pitch')
+legend('linear pitch','nonlinear pitch','location','best')
+title('Unconstrained Nonlinear Pitch')
 
-figure('Name','Horizon Motor Forces')
-subplot(2,1,1)
-plot(teltime(telindex:end),mot1(telindex:end))
-hold on
-plot(teltime(telindex:end),mot2(telindex:end))
-plot(teltime(telindex:end),mot3(telindex:end))
-plot(teltime(telindex:end),mot4(telindex:end))
-xlim([0 15])
-ylim([1 2.5])
-ylabel('Force (N)')
-legend('Motor 1', 'Motor 2','Motor 3', 'Motor 4')
-title('0.2 Sec Horizon Motor Forces')
 
-subplot(2,1,2)
-plot(teltime2(telindex2:end),mot12(telindex2:end))
-hold on
-plot(teltime2(telindex2:end),mot22(telindex2:end))
-plot(teltime2(telindex2:end),mot32(telindex2:end))
-plot(teltime2(telindex2:end),mot42(telindex2:end))
-xlim([0 15])
-ylim([1 2.5])
-ylabel('Force (N)')
-legend('Motor 1', 'Motor 2','Motor 3', 'Motor 4')
-title('0.7 Sec Horizon Model Motor Forces')
